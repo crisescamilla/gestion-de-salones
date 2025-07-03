@@ -79,4 +79,4 @@ The database schema follows this structure:
 
 ## Security
 
-All tables have Row Level Security (RLS) enabled with appropriate policies to ensure data isolation between tenants.
+All tables have Row Level Security (RLS) enabled with appropriate policies to ensure data isolation between tenants.# gestion-de-salones
