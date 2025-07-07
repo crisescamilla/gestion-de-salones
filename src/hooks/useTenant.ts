@@ -46,14 +46,28 @@ export const useTenantProvider = (): TenantContext => {
           currentTenant = getCurrentTenant();
         }
 
+        // Si no se encuentra localmente, buscar en Supabase por slug
+        if (!currentTenant) {
+          const path = window.location.pathname;
+          const segments = path.split("/").filter(Boolean);
+          if (segments.length > 0) {
+            const slug = segments[0];
+            currentTenant = await getTenantBySlugFromSupabase(slug);
+            if (currentTenant) {
+              setCurrentTenant(currentTenant); // Guardar en localStorage para futuras visitas
+            }
+          }
+        }
+
+        
+
         if (currentTenant) {
           setTenant(currentTenant);
-          setCurrentTenant(currentTenant);
 
           // Load tenant owner
           const tenantOwner = getTenantOwnerById(currentTenant.ownerId);
           setOwner(tenantOwner);
-          
+
           // Sincronizar datos entre navegadores
           syncTenantData();
         } else {
@@ -188,3 +202,4 @@ import {
   getTenantBySlug,
   syncTenantData
 } from '../utils/tenantManager';
+import { getTenantBySlug as getTenantBySlugFromSupabase } from '../utils/tenantSupabase';
