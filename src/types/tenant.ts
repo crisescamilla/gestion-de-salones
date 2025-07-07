@@ -31,15 +31,14 @@ export interface Tenant {
 
 export interface TenantOwner {
   id: string;
+  tenant_id: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  passwordHash: string;
-  isEmailVerified: boolean;
-  createdAt: string;
-  lastLogin?: string;
-  tenants: string[]; // Array of tenant IDs
+  password_hash: string;
+  created_at: string;
+  is_active: boolean;
+  // ...otros campos si necesitas...
 }
 
 export interface TenantContext {

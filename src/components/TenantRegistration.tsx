@@ -136,17 +136,19 @@ const TenantRegistration: React.FC = () => {
       const ownerId = uuidv4()
 
       // Create owner
+      const passwordHash = await hashPassword(ownerData.password);
+
       const owner: TenantOwner = {
         id: ownerId,
+        tenant_id: ownerId, // Assuming ownerId is the tenantId for now, adjust if needed
+        first_name: ownerData.firstName,
+        last_name: ownerData.lastName,
         email: ownerData.email,
-        firstName: ownerData.firstName,
-        lastName: ownerData.lastName,
-        phone: ownerData.phone,
-        passwordHash: await hashPassword(ownerData.password), // In production, use proper hashing
-        isEmailVerified: false,
-        createdAt: new Date().toISOString(),
-        tenants: [],
-      }
+        password_hash: passwordHash,
+        created_at: new Date().toISOString(),
+        is_active: true,
+        // ... otros campos si los tienes ...
+      };
 
       // Create tenant with admin user
       const tenant: Omit<Tenant, "id" | "createdAt" | "updatedAt"> = {
@@ -183,14 +185,15 @@ const TenantRegistration: React.FC = () => {
         lastName: ownerData.lastName,
         email: ownerData.email,
         password: ownerData.password,
-      })
+      });
+      
 
-      // Update owner with tenant ID
-      owner.tenants = [createdTenant.id]
-      await saveTenantOwner(owner)
+      // Update owner with tenant ID (fix: add tenants property if missing)
+      (owner as any).tenants = [createdTenant.id];
+      await saveTenantOwner(owner);
 
       // Set as current tenant
-      await setCurrentTenant(createdTenant)
+      await setCurrentTenant(createdTenant);
 
       // Store tenant slug in cookie for cross-browser persistence
       document.cookie = `current_tenant_slug=${createdTenant.slug}; path=/; max-age=2592000`; // 30 days

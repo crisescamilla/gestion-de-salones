@@ -300,13 +300,10 @@ export const createTenantOwnerInSupabase = async (owner: TenantOwner): Promise<b
       .upsert([{
         id: owner.id,
         email: owner.email,
-        first_name: owner.firstName,
-        last_name: owner.lastName,
-        phone: owner.phone || null,
-        password_hash: owner.passwordHash,
-        is_email_verified: owner.isEmailVerified,
-        created_at: owner.createdAt,
-        last_login: owner.lastLogin || null
+        first_name: owner.first_name,
+        last_name: owner.last_name,
+        password_hash: owner.password_hash,
+        created_at: owner.created_at
       }], {
         onConflict: 'id'
       });
@@ -969,20 +966,16 @@ export const migrateToMultiTenant = async (): Promise<void> => {
     // Create default owner
     const defaultOwner: TenantOwner = {
       id: defaultTenant.ownerId,
+      tenant_id: defaultTenant.id,
       email: 'admin@bellavitaspa.com',
-      firstName: 'Admin',
-      lastName: 'Bella Vita',
-      phone: '664-563-6423',
-      passwordHash: 'hashed-password', // This would be properly hashed
-      isEmailVerified: true,
-      createdAt: new Date().toISOString(),
-      tenants: [defaultTenant.id]
+      first_name: 'Admin',
+      last_name: 'Bella Vita',
+      is_active: true,
+      password_hash: 'hashed-password', // This would be properly hashed
+      created_at: new Date().toISOString()
     };
-    
-    // Save default tenant and owner
-    await saveTenant(defaultTenant);
     await saveTenantOwner(defaultOwner);
-    
+
     // Create admin user for default tenant
     createTenantAdmin(defaultTenant.id, {
       firstName: 'Admin',
