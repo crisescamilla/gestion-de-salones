@@ -1,6 +1,7 @@
 import { AdminUser, LoginAttempt, AuthSession } from '../types';
 import { getCurrentTenant } from './tenantManager';
 
+
 export const hashPassword = async (password: string): Promise<string> => {
   const encoder = new TextEncoder();
   const data = encoder.encode(password + "beauty-app-salt");
