@@ -55,8 +55,10 @@ const AppointmentManager: React.FC = () => {
   const notificationTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map())
 
   useEffect(() => {
-    loadData()
-  }, [])
+    (async () => {
+      await loadData();
+    })();
+  }, []);
 
   useEffect(() => {
     console.log("🔄 Configurando listeners de eventos en tiempo real...")
@@ -129,13 +131,13 @@ const AppointmentManager: React.FC = () => {
     }
   }, [])
 
-  const loadData = () => {
-    console.log("📊 Cargando datos de citas...")
+  const loadData = async () => {
+    console.log("📊 Cargando datos de citas...");
     try {
-      const appointmentsData = getAppointments()
-      const clientsData = getClients()
-      const servicesData = getActiveServices()
-      const staffData = getStaffData()
+      const appointmentsData = getAppointments();
+      const clientsData = getClients();
+      const servicesData = await getActiveServices();
+      const staffData = getStaffData();
 
       console.log("📊 Datos cargados:", {
         appointments: appointmentsData.length,

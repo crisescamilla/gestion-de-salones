@@ -739,31 +739,53 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
 
             {/* Image URL */}
             <div>
-              <label 
-                className="block text-sm font-medium mb-2 theme-transition"
-                style={{ color: colors?.text || '#1f2937' }}
-              >
-                URL de Imagen
-              </label>
-              <input
-                type="url"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg focus:ring-2 focus:border-transparent theme-transition"
-                style={{ 
-                  border: `1px solid ${colors?.border || '#e5e7eb'}`,
-                  backgroundColor: colors?.background || '#f8fafc',
-                  color: colors?.text || '#1f2937'
-                }}
-                placeholder="https://ejemplo.com/imagen.jpg"
-              />
-              <p 
-                className="text-xs mt-1 theme-transition"
-                style={{ color: colors?.textSecondary || '#6b7280' }}
-              >
-                Recomendado: imagen cuadrada de al menos 400x400 píxeles
-              </p>
-            </div>
+  <label 
+    className="block text-sm font-medium mb-2 theme-transition"
+    style={{ color: colors?.text || '#1f2937' }}
+  >
+    Imagen
+  </label>
+  
+  {/* Input para archivo de imagen */}
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData({ ...formData, image: reader.result as string });
+        };
+        reader.readAsDataURL(file);
+      }
+    }}
+    className="w-full px-3 py-2 rounded-lg focus:ring-2 focus:border-transparent theme-transition"
+    style={{ 
+      border: `1px solid ${colors?.border || '#e5e7eb'}`,
+      backgroundColor: colors?.background || '#f8fafc',
+      color: colors?.text || '#1f2937'
+    }}
+  />
+
+  {/* Vista previa de la imagen */}
+  {formData.image && (
+    <img
+      src={formData.image}
+      alt="Vista previa"
+      className="mt-2 rounded-lg object-cover"
+      style={{ width: 150, height: 150 }}
+    />
+  )}
+
+  <p 
+    className="text-xs mt-1 theme-transition"
+    style={{ color: colors?.textSecondary || '#6b7280' }}
+  >
+    Recomendado: imagen cuadrada de al menos 400x400 píxeles
+  </p>
+</div>
+
 
             {/* Bio */}
             <div>

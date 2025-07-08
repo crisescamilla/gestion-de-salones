@@ -75,7 +75,9 @@ function App() {
   // Real-time services update
   useEffect(() => {
     // Initial load
-    updateServicesList();
+    (async () => {
+      await updateServicesList();
+    })();
 
     // Subscribe to service changes
     const handleServiceChange = () => {
@@ -94,8 +96,8 @@ function App() {
     };
   }, []);
 
-  const updateServicesList = () => {
-    const services = getActiveServices();
+  const updateServicesList = async () => {
+    const services = await getActiveServices();
 
     // Count services by category
     const categoryMap: Record<string, number> = {};

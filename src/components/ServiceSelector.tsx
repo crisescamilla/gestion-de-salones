@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Service } from '../types';
 import { getActiveServices } from '../utils/servicesManager';
 import { serviceCategories } from '../data/services';
@@ -20,9 +20,12 @@ const iconMap = {
 const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onServiceSelect }) => {
   const [selectedCategory, setSelectedCategory] = useState(serviceCategories[0].id);
   const [selectedServices, setSelectedServices] = useState<Service[]>([]);
+  const [allServices, setAllServices] = useState<Service[]>([]);
 
-  // Use services from storage instead of static data
-  const allServices = getActiveServices();
+  useEffect(() => {
+    getActiveServices().then(setAllServices);
+  }, []);
+
   const categoryServices = allServices.filter(service => service.category === selectedCategory);
 
   const toggleService = (service: Service) => {

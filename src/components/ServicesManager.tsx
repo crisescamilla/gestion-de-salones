@@ -57,9 +57,9 @@ const ServicesManager: React.FC = () => {
     }
   }, [message]);
 
-  const loadServices = () => {
+  const loadServices = async () => {
     try {
-      const allServices = getServices();
+      const allServices = await getServices();
       setServices(allServices);
       console.log(`📊 Loaded ${allServices.length} services`);
     } catch (error) {
@@ -75,11 +75,11 @@ const ServicesManager: React.FC = () => {
       
       if (existingService) {
         // Update existing service
-        saveService(serviceData, 'admin');
+        await saveService(serviceData, 'admin');
         setMessage({ type: 'success', text: 'Servicio actualizado exitosamente' });
       } else {
         // Create new service
-        createService(serviceData, 'admin');
+        await createService(serviceData, 'admin');
         setMessage({ type: 'success', text: 'Servicio creado exitosamente' });
       }
       
@@ -97,10 +97,10 @@ const ServicesManager: React.FC = () => {
     }
   };
 
-  const handleDeleteService = (serviceId: string) => {
+  const handleDeleteService = async (serviceId: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este servicio?')) {
       try {
-        deleteService(serviceId, 'admin');
+        await deleteService(serviceId, 'admin');
         loadServices();
         setMessage({ type: 'success', text: 'Servicio eliminado exitosamente' });
         
