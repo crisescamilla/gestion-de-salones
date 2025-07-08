@@ -214,7 +214,7 @@ const SalonSettings: React.FC = () => {
             className="text-2xl font-bold flex items-center theme-transition"
             style={{ color: colors?.text || "#1f2937" }}
           >
-            <Settings className="w-8 h-8 mr-3" style={{ color: colors?.accent || "#8b5cf6" }} />
+            <Settings className="w-8 h-8 mr-3" style={{ color: colors?.accent || "#3b82f6" }} />
             Configuración del Salón
           </h2>
           <p className="mt-1 theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
@@ -275,8 +275,8 @@ const SalonSettings: React.FC = () => {
                   onClick={() => setActiveTab(tab.id as any)}
                   className="flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors theme-transition"
                   style={{
-                    borderBottomColor: isActive ? colors?.accent || "#8b5cf6" : "transparent",
-                    color: isActive ? colors?.accent || "#8b5cf6" : colors?.textSecondary || "#6b7280",
+                    borderBottomColor: isActive ? colors?.accent || "#3b82f6" : "transparent",
+                    color: isActive ? colors?.accent || "#3b82f6" : colors?.textSecondary || "#6b7280",
                   }}
                 >
                   <Icon className="w-4 h-4 mr-2" />
@@ -439,7 +439,7 @@ const SalonSettings: React.FC = () => {
                   onClick={handleSaveChanges}
                   disabled={!hasChanges || !isFormValid || loading}
                   className="flex items-center px-6 py-3 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed theme-transition"
-                  style={{ backgroundColor: colors?.accent || "#8b5cf6" }}
+                  style={{ backgroundColor: colors?.accent || "#3b82f6" }}
                 >
                   {loading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -640,7 +640,7 @@ const SalonSettings: React.FC = () => {
                   onClick={handleSaveChanges}
                   disabled={!hasChanges || loading}
                   className="flex items-center px-6 py-3 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed theme-transition"
-                  style={{ backgroundColor: colors?.accent || "#8b5cf6" }}
+                  style={{ backgroundColor: colors?.accent || "#3b82f6" }}
                 >
                   {loading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -699,7 +699,7 @@ const SalonSettings: React.FC = () => {
                           checked={formData.hours[day as keyof typeof formData.hours].isOpen}
                           onChange={(e) => handleHoursChange(day, "isOpen", e.target.checked)}
                           className="w-4 h-4 rounded focus:ring-2 theme-transition"
-                          style={{ accentColor: colors?.accent || "#8b5cf6" }}
+                          style={{ accentColor: colors?.accent || "#3b82f6" }}
                         />
                         <span className="ml-2 text-sm theme-transition" style={{ color: colors?.text || "#1f2937" }}>
                           Abierto
@@ -781,7 +781,7 @@ const SalonSettings: React.FC = () => {
                 onClick={handleSaveChanges}
                 disabled={!hasChanges || loading}
                 className="flex items-center px-6 py-3 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed theme-transition"
-                style={{ backgroundColor: colors?.accent || "#8b5cf6" }}
+                style={{ backgroundColor: colors?.accent || "#3b82f6" }}
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -799,11 +799,11 @@ const SalonSettings: React.FC = () => {
       <div
         className="rounded-xl p-6 border theme-transition"
         style={{
-          background: `linear-gradient(135deg, ${colors?.accent || "#8b5cf6"}0d, ${colors?.secondary || "#06b6d4"}0d)`,
-          borderColor: `${colors?.accent || "#8b5cf6"}33`,
+          background: `linear-gradient(135deg, ${colors?.accent || "#3b82f6"}0d, ${colors?.secondary || "#06b6d4"}0d)`,
+          borderColor: `${colors?.accent || "#3b82f6"}33`,
         }}
       >
-        <h3 className="text-lg font-semibold mb-4 theme-transition" style={{ color: colors?.accent || "#8b5cf6" }}>
+        <h3 className="text-lg font-semibold mb-4 theme-transition" style={{ color: colors?.accent || "#3b82f6" }}>
           Vista Previa Actual
         </h3>
         <div className="space-y-3">
@@ -851,7 +851,7 @@ const SalonSettings: React.FC = () => {
             className="text-xs pt-2 border-t theme-transition"
             style={{
               color: colors?.textSecondary || "#6b7280",
-              borderColor: `${colors?.accent || "#8b5cf6"}33`,
+              borderColor: `${colors?.accent || "#3b82f6"}33`,
             }}
           >
             Última actualización: {new Date(settings.updatedAt).toLocaleString("es-ES")} por {settings.updatedBy}

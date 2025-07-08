@@ -83,7 +83,7 @@ const RewardsManager: React.FC = () => {
             className="text-2xl font-bold flex items-center theme-transition"
             style={{ color: colors?.text || '#1f2937' }}
           >
-            <Gift className="w-8 h-8 mr-3" style={{ color: colors?.accent || '#8b5cf6' }} />
+            <Gift className="w-8 h-8 mr-3" style={{ color: colors?.accent || '#3b82f6' }} />
             Sistema de Recompensas
           </h2>
           <p 
@@ -97,7 +97,7 @@ const RewardsManager: React.FC = () => {
         <button
           onClick={() => setIsEditing(!isEditing)}
           className="flex items-center px-4 py-2 text-white rounded-lg transition-colors theme-transition"
-          style={{ backgroundColor: colors?.accent || '#8b5cf6' }}
+          style={{ backgroundColor: colors?.accent || '#3b82f6' }}
         >
           <Settings className="w-4 h-4 mr-2" />
           Configurar
@@ -176,16 +176,16 @@ const RewardsManager: React.FC = () => {
               </p>
               <p 
                 className="text-2xl font-bold theme-transition"
-                style={{ color: colors?.accent || '#8b5cf6' }}
+                style={{ color: colors?.accent || '#3b82f6' }}
               >
                 {statistics.clientsWithRewards}
               </p>
             </div>
             <div 
               className="w-12 h-12 rounded-lg flex items-center justify-center theme-transition"
-              style={{ backgroundColor: `${colors?.accent || '#8b5cf6'}1a` }}
+              style={{ backgroundColor: `${colors?.accent || '#3b82f6'}1a` }}
             >
-              <Users className="w-6 h-6" style={{ color: colors?.accent || '#8b5cf6' }} />
+              <Users className="w-6 h-6" style={{ color: colors?.accent || '#3b82f6' }} />
             </div>
           </div>
         </div>
@@ -328,7 +328,7 @@ const RewardsManager: React.FC = () => {
                 onChange={(e) => setSettings({...settings, isActive: e.target.checked})}
                 className="w-4 h-4 rounded focus:ring-2 theme-transition"
                 style={{ 
-                  accentColor: colors?.accent || '#8b5cf6',
+                  accentColor: colors?.accent || '#3b82f6',
                   borderColor: colors?.border || '#e5e7eb'
                 }}
               />
@@ -356,7 +356,7 @@ const RewardsManager: React.FC = () => {
                 onClick={handleSaveSettings}
                 disabled={loading}
                 className="px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center theme-transition"
-                style={{ backgroundColor: colors?.accent || '#8b5cf6' }}
+                style={{ backgroundColor: colors?.accent || '#3b82f6' }}
               >
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -378,7 +378,7 @@ const RewardsManager: React.FC = () => {
             className="text-lg font-semibold mb-4 flex items-center theme-transition"
             style={{ color: colors?.text || '#1f2937' }}
           >
-            <Gift className="w-5 h-5 mr-2" style={{ color: colors?.accent || '#8b5cf6' }} />
+            <Gift className="w-5 h-5 mr-2" style={{ color: colors?.accent || '#3b82f6' }} />
             Notificaciones Recientes ({unreadNotifications.length})
           </h3>
           
@@ -388,8 +388,8 @@ const RewardsManager: React.FC = () => {
                 key={notification.id}
                 className="flex items-start justify-between p-4 rounded-lg border theme-transition"
                 style={{ 
-                  backgroundColor: `${colors?.accent || '#8b5cf6'}0d`,
-                  borderColor: `${colors?.accent || '#8b5cf6'}33`
+                  backgroundColor: `${colors?.accent || '#3b82f6'}0d`,
+                  borderColor: `${colors?.accent || '#3b82f6'}33`
                 }}
               >
                 <div className="flex-1">
@@ -415,7 +415,7 @@ const RewardsManager: React.FC = () => {
                 <button
                   onClick={() => handleMarkNotificationRead(notification.id)}
                   className="ml-4 text-xs font-medium transition-colors theme-transition"
-                  style={{ color: colors?.accent || '#8b5cf6' }}
+                  style={{ color: colors?.accent || '#3b82f6' }}
                 >
                   Marcar leída
                 </button>

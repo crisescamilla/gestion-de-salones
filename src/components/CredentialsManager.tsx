@@ -259,20 +259,20 @@ const CredentialsManager: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-            <Key className="w-8 h-8 mr-3 text-purple-600" />
+            <Key className="w-8 h-8 mr-3 text-blue-600" />
             Gestión de Credenciales
           </h2>
           <p className="text-gray-600 mt-1">
             Administra tu nombre de usuario y contraseña de forma segura
           </p>
           {currentTenant && (
-            <p className="text-sm text-purple-600 mt-1">
+            <p className="text-sm text-blue-600 mt-1">
               Negocio: {currentTenant.name}
             </p>
           )}
         </div>
         
-        <div className="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg">
+        <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg">
           <div className="flex items-center">
             <UserCheck className="w-4 h-4 mr-2" />
             <span className="font-medium">{currentUser.username}</span>
@@ -325,7 +325,7 @@ const CredentialsManager: React.FC = () => {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
-                      ? 'border-purple-500 text-purple-600'
+                      ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -386,7 +386,7 @@ const CredentialsManager: React.FC = () => {
                       type={showPasswords.current ? 'text' : 'password'}
                       value={passwordData.currentPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Ingresa tu contraseña actual"
                       disabled={loading}
                     />
@@ -411,7 +411,7 @@ const CredentialsManager: React.FC = () => {
                       type={showPasswords.new ? 'text' : 'password'}
                       value={passwordData.newPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Ingresa tu nueva contraseña"
                       disabled={loading}
                     />
@@ -451,7 +451,7 @@ const CredentialsManager: React.FC = () => {
                       type={showPasswords.confirm ? 'text' : 'password'}
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Confirma tu nueva contraseña"
                       disabled={loading}
                     />
@@ -475,7 +475,7 @@ const CredentialsManager: React.FC = () => {
                 <button
                   onClick={handlePasswordChange}
                   disabled={loading || !passwordValidation.isValid || passwordData.newPassword !== passwordData.confirmPassword}
-                  className="w-full flex items-center justify-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -526,7 +526,7 @@ const CredentialsManager: React.FC = () => {
                       type="text"
                       value={usernameData.newUsername}
                       onChange={(e) => setUsernameData(prev => ({ ...prev, newUsername: e.target.value }))}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Ingresa tu nuevo nombre de usuario"
                       disabled={loading}
                     />
@@ -559,7 +559,7 @@ const CredentialsManager: React.FC = () => {
                       type={showCurrentPassword ? 'text' : 'password'}
                       value={usernameData.currentPassword}
                       onChange={(e) => setUsernameData(prev => ({ ...prev, currentPassword: e.target.value }))}
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Ingresa tu contraseña actual"
                       disabled={loading}
                     />
@@ -685,7 +685,7 @@ const CredentialsManager: React.FC = () => {
                       type="email"
                       value={repairData.email}
                       onChange={(e) => setRepairData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Ingresa tu email"
                       disabled={repairLoading}
                     />
@@ -703,7 +703,7 @@ const CredentialsManager: React.FC = () => {
                       type={showRepairPasswords.password ? 'text' : 'password'}
                       value={repairData.password}
                       onChange={(e) => setRepairData(prev => ({ ...prev, password: e.target.value }))}
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Ingresa una nueva contraseña"
                       disabled={repairLoading}
                     />
@@ -743,7 +743,7 @@ const CredentialsManager: React.FC = () => {
                       type={showRepairPasswords.confirm ? 'text' : 'password'}
                       value={repairData.confirmPassword}
                       onChange={(e) => setRepairData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Confirma la nueva contraseña"
                       disabled={repairLoading}
                     />

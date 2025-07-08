@@ -376,7 +376,7 @@ const Dashboard: React.FC = () => {
       case "appointment_updated":
         return colors?.primary || "#0ea5e9"
       case "client_registered":
-        return colors?.accent || "#8b5cf6"
+        return colors?.accent || "#3b82f6"
       case "service_updated":
         return colors?.warning || "#f59e0b"
       case "staff_updated":
@@ -556,9 +556,9 @@ const Dashboard: React.FC = () => {
             </div>
             <div
               className="w-12 h-12 rounded-lg flex items-center justify-center theme-transition"
-              style={{ backgroundColor: `${colors?.accent || "#8b5cf6"}1a` }}
+              style={{ backgroundColor: `${colors?.accent || "#3b82f6"}1a` }}
             >
-              <Users className="w-6 h-6" style={{ color: colors?.accent || "#8b5cf6" }} />
+              <Users className="w-6 h-6" style={{ color: colors?.accent || "#3b82f6" }} />
             </div>
           </div>
         </div>

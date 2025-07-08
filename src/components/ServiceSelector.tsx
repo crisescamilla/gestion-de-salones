@@ -85,14 +85,14 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onServiceSelect }) =>
             <div
               key={service.id}
               className={`relative bg-white border-2 rounded-xl p-6 transition-all duration-300 cursor-pointer hover:shadow-lg ${
-                isSelected ? 'border-purple-500 bg-purple-50' : 'border-gray-200 hover:border-purple-300'
+                isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'
               }`}
               onClick={() => toggleService(service)}
             >
               <div className="flex justify-between items-start mb-3">
                 <h3 className="text-lg font-semibold text-gray-800">{service.name}</h3>
                 <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                  isSelected ? 'bg-purple-500 border-purple-500' : 'border-gray-300'
+                  isSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
                 }`}>
                   {isSelected ? (
                     <Plus className="w-4 h-4 text-white rotate-45" />
@@ -108,7 +108,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onServiceSelect }) =>
                 <div className="text-sm text-gray-500">
                   <span>{service.duration} min</span>
                 </div>
-                <div className="text-lg font-bold text-purple-600">
+                <div className="text-lg font-bold text-blue-600">
                   ${service.price}
                 </div>
               </div>
@@ -125,16 +125,16 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onServiceSelect }) =>
 
       {/* Selected Services Summary */}
       {selectedServices.length > 0 && (
-        <div className="bg-purple-50 rounded-xl p-6 mb-6">
-          <h3 className="font-semibold text-purple-800 mb-4">Servicios Seleccionados</h3>
+        <div className="bg-blue-50 rounded-xl p-6 mb-6">
+          <h3 className="font-semibold text-blue-800 mb-4">Servicios Seleccionados</h3>
           
           <div className="space-y-2 mb-4">
             {selectedServices.map(service => (
               <div key={service.id} className="flex justify-between items-center text-sm">
-                <span className="text-purple-700">{service.name}</span>
+                <span className="text-blue-700">{service.name}</span>
                 <div className="flex items-center space-x-3">
-                  <span className="text-purple-600">{service.duration} min</span>
-                  <span className="font-semibold text-purple-800">${service.price}</span>
+                  <span className="text-blue-600">{service.duration} min</span>
+                  <span className="font-semibold text-blue-800">${service.price}</span>
                   <button
                     onClick={(e) => {
                       e.preventDefault();
@@ -149,9 +149,9 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onServiceSelect }) =>
             ))}
           </div>
           
-          <div className="border-t border-purple-200 pt-4">
+          <div className="border-t border-blue-200 pt-4">
             <div className="flex justify-between items-center">
-              <div className="text-sm text-purple-600">
+              <div className="text-sm text-blue-600">
                 <span>Duración total: {totalDuration} minutos</span>
               </div>
               <div className="text-xl font-bold text-purple-800">
