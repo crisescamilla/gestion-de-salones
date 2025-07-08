@@ -606,7 +606,7 @@ const CredentialsManager: React.FC = () => {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center">
                           {update.type === 'password' ? (
-                            <Lock className="w-4 h-4 text-purple-600 mr-2" />
+                            <Lock className="w-4 h-4 text-blue-600 mr-2" />
                           ) : (
                             <User className="w-4 h-4 text-blue-600 mr-2" />
                           )}
