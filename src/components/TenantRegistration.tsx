@@ -59,7 +59,7 @@ const TenantRegistration: React.FC = () => {
     email: "",
     website: "",
     primaryColor: "#ec4899",
-    secondaryColor: "#8b5cf6",
+    secondaryColor: "#3b82f6",
   })
 
   const handleOwnerSubmit = (e: React.FormEvent) => {
@@ -252,7 +252,7 @@ const TenantRegistration: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+          className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
         >
           <div className="flex items-center space-x-2">
             <div className="w-6 h-6 rounded-full border-2 border-gray-200" style={{ backgroundColor: value }} />
@@ -276,7 +276,7 @@ const TenantRegistration: React.FC = () => {
                       setIsOpen(false)
                     }}
                     className={`flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 transition-colors ${
-                      value === color.value ? "bg-purple-50 border border-purple-200" : ""
+                      value === color.value ? "bg-blue-50 border border-blue-200" : ""
                     }`}
                   >
                     <div
@@ -288,7 +288,7 @@ const TenantRegistration: React.FC = () => {
                       <div className="text-xs text-gray-500">{color.description}</div>
                       <div className="text-xs text-gray-400 font-mono">{color.value}</div>
                     </div>
-                    {value === color.value && <CheckCircle className="w-4 h-4 text-purple-600" />}
+                    {value === color.value && <CheckCircle className="w-4 h-4 text-blue-600" />}
                   </button>
                 ))}
               </div>
@@ -307,7 +307,7 @@ const TenantRegistration: React.FC = () => {
                     type="text"
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 font-mono"
+                    className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 font-mono"
                     placeholder="#FFFFFF"
                   />
                 </div>
@@ -349,7 +349,7 @@ const TenantRegistration: React.FC = () => {
               >
                 1
               </div>
-              <div className={`flex-1 h-1 mx-4 ${step >= 2 ? "bg-purple-600" : "bg-gray-200"}`} />
+              <div className={`flex-1 h-1 mx-4 ${step >= 2 ? "bg-blue-600" : "bg-gray-200"}`} />
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
                   step >= 2 ? "bg-red-600 text-white" : "bg-gray-200 text-gray-600"
@@ -456,7 +456,7 @@ const TenantRegistration: React.FC = () => {
                       type="password"
                       value={ownerData.confirmPassword}
                       onChange={(e) => setOwnerData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       minLength={8}
                       required
                     />
@@ -485,7 +485,7 @@ const TenantRegistration: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-blue-600 to-pink-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-green-700 transition-all duration-300"
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-green-700 transition-all duration-300"
                 >
                   Continuar
                 </button>
@@ -562,7 +562,7 @@ const TenantRegistration: React.FC = () => {
                   <textarea
                     value={tenantData.description}
                     onChange={(e) => setTenantData((prev) => ({ ...prev, description: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows={3}
                     placeholder="Describe tu negocio..."
                   />
@@ -579,7 +579,7 @@ const TenantRegistration: React.FC = () => {
                       type="tel"
                       value={tenantData.phone}
                       onChange={(e) => setTenantData((prev) => ({ ...prev, phone: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -593,7 +593,7 @@ const TenantRegistration: React.FC = () => {
                       type="email"
                       value={tenantData.email}
                       onChange={(e) => setTenantData((prev) => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -609,7 +609,7 @@ const TenantRegistration: React.FC = () => {
                     type="text"
                     value={tenantData.address}
                     onChange={(e) => setTenantData((prev) => ({ ...prev, address: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Dirección completa del negocio"
                     required
                   />
@@ -625,7 +625,7 @@ const TenantRegistration: React.FC = () => {
                     type="url"
                     value={tenantData.website}
                     onChange={(e) => setTenantData((prev) => ({ ...prev, website: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="https://mi-sitio-web.com"
                   />
                 </div>

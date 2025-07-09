@@ -102,7 +102,7 @@ const generateEmailHTML = (client: Client, appointment: Appointment, services: S
 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
   
   <!-- Header -->
-  <div style="background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
+  <div style="background: linear-gradient(135deg, #ec4899, #3b82f6); padding: 30px; text-align: center; border-radius: 12px 12px 0 0;">
     <h1 style="color: white; margin: 0; font-size: 28px;">✨ Tu salon ✨</h1>
     <p style="color: #fce7f3; margin: 10px 0 0 0; font-size: 16px;">Tu momento de belleza y relajación</p>
   </div>
@@ -111,7 +111,7 @@ const generateEmailHTML = (client: Client, appointment: Appointment, services: S
   <div style="background: white; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
     
     <!-- Greeting -->
-    <h2 style="color: #8b5cf6; margin-top: 0;">¡Hola ${client.fullName}! 🌸</h2>
+    <h2 style="color: #3b82f6; margin-top: 0;">¡Hola ${client.fullName}! 🌸</h2>
     <p style="font-size: 16px; margin-bottom: 25px;">
       Tu cita en <strong></strong> ha sido confirmada exitosamente. ¡Estamos emocionados de recibirte!
     </p>
@@ -132,7 +132,7 @@ const generateEmailHTML = (client: Client, appointment: Appointment, services: S
       
       <div style="display: flex; justify-content: space-between;">
         <span style="font-weight: bold;">Total a Pagar:</span>
-        <span style="color: #8b5cf6; font-weight: bold; font-size: 18px;">$${appointment.totalPrice}</span>
+        <span style="color: #3b82f6; font-weight: bold; font-size: 18px;">$${appointment.totalPrice}</span>
       </div>
     </div>
 
@@ -191,9 +191,9 @@ const generateEmailHTML = (client: Client, appointment: Appointment, services: S
       </p>
       
       <div style="margin-top: 15px;">
-        <a href="#" style="color: #8b5cf6; text-decoration: none; margin: 0 10px;">🌐 Sitio Web</a>
-        <a href="#" style="color: #8b5cf6; text-decoration: none; margin: 0 10px;">📱 Instagram</a>
-        <a href="#" style="color: #8b5cf6; text-decoration: none; margin: 0 10px;">👍 Facebook</a>
+        <a href="#" style="color: #3b82f6; text-decoration: none; margin: 0 10px;">🌐 Sitio Web</a>
+        <a href="#" style="color: #3b82f6; text-decoration: none; margin: 0 10px;">📱 Instagram</a>
+        <a href="#" style="color: #3b82f6; text-decoration: none; margin: 0 10px;">👍 Facebook</a>
       </div>
     </div>
 

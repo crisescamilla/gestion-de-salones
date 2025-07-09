@@ -128,9 +128,9 @@ const TenantRouter: React.FC = () => {
   // Show loading state
   if (isLoading || checkingAccess || initializing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Cargando...</p>
           <p className="text-xs text-gray-500 mt-2">
             {isLoading ? "Cargando información del negocio..." : 
@@ -170,7 +170,7 @@ const TenantRouter: React.FC = () => {
       <button
         onClick={handleManualSync}
         disabled={isSyncing}
-        className="fixed bottom-6 left-6 z-50 p-3 rounded-full bg-purple-600 text-white shadow-lg hover:bg-purple-700 transition-all"
+        className="fixed bottom-6 left-6 z-50 p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all"
         title="Sincronizar datos"
       >
         <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin' : ''}`} />
@@ -199,7 +199,7 @@ const TenantRouter: React.FC = () => {
   // No tenant found for the URL
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-50 to-blue-50 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-8">
           <div className="text-6xl mb-4">🏢</div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -213,7 +213,7 @@ const TenantRouter: React.FC = () => {
               window.location.href = '/';
               setForceRefresh(prev => prev + 1);
             }}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-300"
+            className="bg-gradient-to-r from-blue-600 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-700 transition-all duration-300"
           >
             Ver Todos los Negocios
           </button>

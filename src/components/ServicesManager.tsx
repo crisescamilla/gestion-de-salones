@@ -427,7 +427,10 @@ const ServicesManager: React.FC = () => {
             <ServiceCard 
               key={service.id}
               service={service}
-              onEdit={() => setEditingService(service)}
+              onEdit={() => {
+                setEditingService(service);
+                setShowAddForm(true);
+              }}
               onDelete={() => handleDeleteService(service.id)}
               colors={colors}
             />
@@ -554,7 +557,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, co
         <div className="flex items-center mb-4">
           <Tag 
             className="w-4 h-4 mr-1 theme-transition"
-            style={{ color: colors?.accent || '#8b5cf6' }}
+            style={{ color: colors?.accent || '#3b82f6' }}
           />
           <span 
             className="text-sm font-medium theme-transition"
@@ -565,8 +568,8 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, co
           <span 
             className="ml-2 px-2 py-1 rounded-full text-xs font-medium theme-transition"
             style={{ 
-              backgroundColor: `${colors?.accent || '#8b5cf6'}1a`,
-              color: colors?.accent || '#8b5cf6'
+              backgroundColor: `${colors?.accent || '#3b82f6'}1a`,
+              color: colors?.accent || '#3b82f6'
             }}
           >
             {category?.name || service.category}

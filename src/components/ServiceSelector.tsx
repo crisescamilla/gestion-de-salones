@@ -66,8 +66,8 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onServiceSelect }) =>
               onClick={() => setSelectedCategory(category.id)}
               className={`p-4 rounded-xl border-2 transition-all duration-300 ${
                 selectedCategory === category.id
-                  ? 'border-purple-500 bg-purple-50 text-purple-700'
-                  : 'border-gray-200 hover:border-purple-300 hover:bg-purple-25'
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 hover:border-blue-300 hover:bg-blue-25'
               }`}
             >
               <IconComponent className="w-8 h-8 mx-auto mb-2" />
@@ -154,7 +154,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onServiceSelect }) =>
               <div className="text-sm text-blue-600">
                 <span>Duración total: {totalDuration} minutos</span>
               </div>
-              <div className="text-xl font-bold text-purple-800">
+              <div className="text-xl font-bold text-blue-800">
                 Total: ${totalPrice}
               </div>
             </div>
@@ -162,7 +162,7 @@ const ServiceSelector: React.FC<ServiceSelectorProps> = ({ onServiceSelect }) =>
           
           <button
             onClick={handleContinue}
-            className="w-full mt-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-pink-600 hover:to-purple-700 transition-all duration-300"
+            className="w-full mt-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300"
           >
             Continuar con la Reserva
           </button>

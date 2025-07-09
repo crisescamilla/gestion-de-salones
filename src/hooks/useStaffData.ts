@@ -10,7 +10,9 @@ import {
   getStaffById,
   refreshStaffData,
   initializeStaffDataManager,
+  saveStaffMember,
 } from "../utils/staffDataManager"
+import { getStaffFromSupabase } from "../utils/staffSupabase"
 import { subscribeToEvent, unsubscribeFromEvent, AppEvents } from "../utils/eventManager"
 import { getCurrentTenant } from "../utils/tenantManager"
 
@@ -37,6 +39,28 @@ export const useStaffData = (autoRefresh = true) => {
   }, [tenantId])
 
   useEffect(() => {
+    const loadStaff = async () => {
+      if (!tenantId) return;
+
+      // 1. Intenta cargar del localStorage
+      let localStaff = getStaffData(false, tenantId);
+
+      // 2. Si está vacío, carga de Supabase
+      if (!localStaff || localStaff.length === 0) {
+        const remoteStaff = await getStaffFromSupabase(tenantId);
+        setStaff(remoteStaff);
+
+        // 3. Guarda cada staff en localStorage para futuras cargas rápidas
+        for (const s of remoteStaff) {
+          await saveStaffMember(s, tenantId);
+        }
+      } else {
+        setStaff(localStaff);
+      }
+    };
+
+    loadStaff();
+
     // Inicializar gestor de datos
     initializeStaffDataManager()
 

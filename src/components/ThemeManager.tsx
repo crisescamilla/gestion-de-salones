@@ -65,7 +65,7 @@ const ThemeManager: React.FC = () => {
       secondary: '#06b6d4',
       secondaryLight: '#22d3ee',
       secondaryDark: '#0891b2',
-      accent: '#8b5cf6',
+      accent: '#3b82f6',
       accentLight: '#a78bfa',
       accentDark: '#7c3aed',
       success: '#10b981',
@@ -482,7 +482,7 @@ const ThemeManager: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-            <Palette className="w-8 h-8 mr-3 text-purple-600" />
+            <Palette className="w-8 h-8 mr-3 text-blue-600" />
             Configuración de Temas
           </h2>
           <p className="text-gray-600 mt-1">
@@ -501,7 +501,7 @@ const ThemeManager: React.FC = () => {
           
           <button
             onClick={startCreatingTheme}
-            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4 mr-2" />
             Crear Tema
@@ -530,7 +530,7 @@ const ThemeManager: React.FC = () => {
       {/* Logo Upload Section */}
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-4">
-          <Image className="w-5 h-5 mr-2 text-purple-600" />
+          <Image className="w-5 h-5 mr-2 text-blue-600" />
           Logo del Salón
         </h3>
         
@@ -569,12 +569,12 @@ const ThemeManager: React.FC = () => {
               El logo se mostrará únicamente para este salón y no afectará a otros negocios.
             </p>
             
-            <label className="flex flex-col items-center px-4 py-6 bg-purple-50 text-purple-700 rounded-lg border-2 border-purple-200 cursor-pointer hover:bg-purple-100 transition-colors">
+            <label className="flex flex-col items-center px-4 py-6 bg-blue-50 text-blue-700 rounded-lg border-2 border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors">
               <div className="flex items-center">
                 <Upload className="w-6 h-6 mr-2" />
                 <span className="font-medium">Seleccionar imagen</span>
               </div>
-              <p className="text-sm text-purple-600 mt-2">PNG, JPG, GIF hasta 2MB</p>
+              <p className="text-sm text-blue-600 mt-2">PNG, JPG, GIF hasta 2MB</p>
               <input 
                 type="file" 
                 className="hidden" 
@@ -586,8 +586,8 @@ const ThemeManager: React.FC = () => {
             
             {isUploadingLogo && (
               <div className="mt-4 flex items-center justify-center">
-                <div className="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-                <span className="text-purple-600">Subiendo logo...</span>
+                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                <span className="text-blue-600">Subiendo logo...</span>
               </div>
             )}
             
@@ -643,7 +643,7 @@ const ThemeManager: React.FC = () => {
                     <p className="text-sm text-gray-600 mb-3">{preset.description}</p>
                     <button
                       onClick={() => handleCreateFromPreset(preset.id)}
-                      className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                      className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
                     >
                       Usar Este Tema
                     </button>
@@ -688,7 +688,7 @@ const ThemeManager: React.FC = () => {
                   key={theme.id}
                   className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
                     theme.isActive 
-                      ? 'border-purple-500 bg-purple-50' 
+                      ? 'border-blue-500 bg-blue-50' 
                       : selectedTheme?.id === theme.id
                         ? 'border-blue-300 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
@@ -699,7 +699,7 @@ const ThemeManager: React.FC = () => {
                     <h4 className="font-medium text-gray-900 flex items-center">
                       {theme.name}
                       {theme.isActive && (
-                        <Check className="w-4 h-4 ml-2 text-purple-600" />
+                        <Check className="w-4 h-4 ml-2 text-blue-600" />
                       )}
                       {theme.isDefault && (
                         <span className="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
@@ -814,7 +814,7 @@ const ThemeManager: React.FC = () => {
                       type="text"
                       value={customTheme.name || ''}
                       onChange={(e) => setCustomTheme(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Ej: Mi Tema Personalizado"
                     />
                   </div>
@@ -827,7 +827,7 @@ const ThemeManager: React.FC = () => {
                       type="text"
                       value={customTheme.description || ''}
                       onChange={(e) => setCustomTheme(prev => ({ ...prev, description: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Descripción del tema"
                     />
                   </div>
@@ -855,7 +855,7 @@ const ThemeManager: React.FC = () => {
                                 type="text"
                                 value={customTheme.colors?.[color.key] || '#000000'}
                                 onChange={(e) => handleColorChange(color.key, e.target.value)}
-                                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-purple-500"
+                                className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
                                 placeholder="#000000"
                               />
                               <button
@@ -885,7 +885,7 @@ const ThemeManager: React.FC = () => {
                   <button
                     onClick={handleSaveCustomTheme}
                     disabled={loading}
-                    className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50"
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                   >
                     {loading ? (
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
@@ -904,19 +904,19 @@ const ThemeManager: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setPreviewMode('desktop')}
-                    className={`p-2 rounded-lg ${previewMode === 'desktop' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    className={`p-2 rounded-lg ${previewMode === 'desktop' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
                     <Monitor className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setPreviewMode('tablet')}
-                    className={`p-2 rounded-lg ${previewMode === 'tablet' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    className={`p-2 rounded-lg ${previewMode === 'tablet' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
                     <Tablet className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setPreviewMode('mobile')}
-                    className={`p-2 rounded-lg ${previewMode === 'mobile' ? 'bg-purple-100 text-purple-600' : 'text-gray-600 hover:bg-gray-100'}`}
+                    className={`p-2 rounded-lg ${previewMode === 'mobile' ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-100'}`}
                   >
                     <Smartphone className="w-4 h-4" />
                   </button>

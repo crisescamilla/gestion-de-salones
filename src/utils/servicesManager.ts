@@ -2,6 +2,8 @@
 import type { Service, Product, ServiceCategory } from "../types"
 import { emitEvent, AppEvents } from "./eventManager"
 import { syncToSupabase, SyncDataType } from "./crossBrowserSync"
+import { getServicesFromSupabase, saveServiceToSupabase, deleteServiceFromSupabase } from './servicesSupabase';
+import { v4 as uuidv4 } from 'uuid';
 
 // Interfaces para el historial de precios
 interface PriceHistory {
@@ -129,227 +131,74 @@ let servicesCacheTimestamp: Map<string, number> = new Map();
 const SERVICES_CACHE_DURATION = 5000; // 5 segundos
 
 // ✅ Funciones principales para servicios - TENANT AWARE
-export const getServices = (tenantId?: string): Service[] => {
-  try {
-    // Si no se proporciona tenantId, intentar obtenerlo del contexto actual
-    if (!tenantId) {
-      const currentTenant = getCurrentTenantFromStorage()
-      tenantId = currentTenant?.id
-    }
-
-    // Si no hay tenant, devolver datos vacíos
-    if (!tenantId) {
-      console.warn("⚠️ No tenant ID available for services data")
-      return []
-    }
-
-    const now = Date.now();
-    const cacheTimestamp = servicesCacheTimestamp.get(tenantId) || 0;
-
-    // Usar caché si está disponible y no ha expirado
-    if (servicesCache.has(tenantId) && now - cacheTimestamp < SERVICES_CACHE_DURATION) {
-      console.log(`✅ Using cached services for tenant: ${tenantId}`);
-      return servicesCache.get(tenantId) || [];
-    }
-
-    const storageKey = getTenantStorageKey("services", tenantId)
-    const stored = localStorage.getItem(storageKey)
-
-    if (stored) {
-      const services = JSON.parse(stored);
-      // Actualizar caché
-      servicesCache.set(tenantId, services);
-      servicesCacheTimestamp.set(tenantId, now);
-      return services;
-    } else {
-      // Inicializar con servicios por defecto para este tenant
-      const defaultServices = getDefaultServices()
-      localStorage.setItem(storageKey, JSON.stringify(defaultServices))
-      // Actualizar caché
-      servicesCache.set(tenantId, defaultServices);
-      servicesCacheTimestamp.set(tenantId, now);
-      return defaultServices
-    }
-  } catch (error) {
-    console.error("Error loading services:", error)
-    return getDefaultServices()
+export const getServices = async (tenantId?: string): Promise<Service[]> => {
+  if (!tenantId) {
+    const currentTenant = getCurrentTenantFromStorage();
+    tenantId = currentTenant?.id;
   }
-}
-
-export const getActiveServices = (tenantId?: string): Service[] => {
-  try {
-    const services = getServices(tenantId)
-    return services.filter((service) => service.isActive !== false)
-  } catch (error) {
-    console.error("Error loading active services:", error)
-    return getDefaultServices().filter((service) => service.isActive)
+  if (!tenantId) {
+    console.warn('⚠️ No tenant ID available for services data');
+    return [];
   }
-}
+  return await getServicesFromSupabase(tenantId);
+};
 
-export const saveService = (service: Service, changedBy: string, tenantId?: string): void => {
-  try {
-    // Si no se proporciona tenantId, intentar obtenerlo del contexto actual
-    if (!tenantId) {
-      const currentTenant = getCurrentTenantFromStorage()
-      tenantId = currentTenant?.id
-    }
+// Obtener solo los servicios activos desde Supabase
+export const getActiveServices = async (tenantId?: string): Promise<Service[]> => {
+  const services = await getServices(tenantId);
+  return services.filter((service) => service.isActive !== false);
+};
 
-    // Si no hay tenant, no guardar
-    if (!tenantId) {
-      console.warn("⚠️ No tenant ID available for saving service")
-      return
-    }
-
-    const storageKey = getTenantStorageKey("services", tenantId)
-    const services = getServices(tenantId)
-    const existingIndex = services.findIndex((s) => s.id === service.id)
-
-    if (existingIndex >= 0) {
-      const oldService = services[existingIndex]
-
-      // Registrar cambio de precio si es diferente
-      if (oldService.price !== service.price) {
-        savePriceHistory(
-          {
-            id: Date.now().toString(),
-            serviceId: service.id,
-            oldPrice: oldService.price,
-            newPrice: service.price,
-            changedBy,
-            changedAt: new Date().toISOString(),
-            reason: "Actualización manual",
-          },
-          tenantId,
-        )
-      }
-
-      services[existingIndex] = { ...service, updatedAt: new Date().toISOString() }
-    } else {
-      services.push(service)
-    }
-
-    localStorage.setItem(storageKey, JSON.stringify(services))
-
-    // Invalidar caché
-    servicesCache.delete(tenantId);
-    servicesCacheTimestamp.delete(tenantId);
-
-    // ✅ Emitir evento
-    emitEvent(AppEvents.SERVICE_UPDATED, {
-      service,
-      changedBy,
-      tenantId: tenantId || getCurrentTenantFromStorage()?.id,
-      timestamp: new Date().toISOString(),
-    })
-
-    // Sincronizar con Supabase para compartir entre navegadores
-    syncToSupabase(SyncDataType.SERVICES);
-
-    console.log(`✅ Service saved for tenant ${tenantId || "current"}:`, service.id)
-  } catch (error) {
-    console.error("Error saving service:", error)
-    throw error
+// Guardar (insertar/actualizar) un servicio en Supabase
+export const saveService = async (service: Service, changedBy: string, tenantId?: string): Promise<boolean> => {
+  if (!tenantId) {
+    const currentTenant = getCurrentTenantFromStorage();
+    tenantId = currentTenant?.id;
   }
-}
+  if (!tenantId) {
+    console.warn('⚠️ No tenant ID available for saving service');
+    return false;
+  }
+  return await saveServiceToSupabase(service, tenantId);
+};
 
-export const createService = (
-  serviceData: Omit<Service, "id" | "createdAt" | "updatedAt">,
+// Crear un nuevo servicio en Supabase
+export const createService = async (
+  serviceData: Omit<Service, 'id' | 'createdAt' | 'updatedAt'>,
   createdBy: string,
-  tenantId?: string,
-): Service => {
-  try {
-    // Si no se proporciona tenantId, intentar obtenerlo del contexto actual
-    if (!tenantId) {
-      const currentTenant = getCurrentTenantFromStorage()
-      tenantId = currentTenant?.id
-    }
-
-    // Si no hay tenant, no crear
-    if (!tenantId) {
-      console.warn("⚠️ No tenant ID available for creating service")
-      throw new Error("No tenant ID available")
-    }
-
-    const newService: Service = {
-      ...serviceData,
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-
-    const storageKey = getTenantStorageKey("services", tenantId)
-    const services = getServices(tenantId)
-    services.push(newService)
-    localStorage.setItem(storageKey, JSON.stringify(services))
-
-    // Invalidar caché
-    servicesCache.delete(tenantId);
-    servicesCacheTimestamp.delete(tenantId);
-
-    // ✅ Emitir evento
-    emitEvent(AppEvents.SERVICE_CREATED, {
-      service: newService,
-      createdBy,
-      tenantId: tenantId || getCurrentTenantFromStorage()?.id,
-      timestamp: new Date().toISOString(),
-    })
-
-    // Sincronizar con Supabase para compartir entre navegadores
-    syncToSupabase(SyncDataType.SERVICES);
-
-    console.log(`✅ Service created for tenant ${tenantId || "current"}:`, newService.id)
-    return newService
-  } catch (error) {
-    console.error("Error creating service:", error)
-    throw error
+  tenantId?: string
+): Promise<Service | null> => {
+  if (!tenantId) {
+    const currentTenant = getCurrentTenantFromStorage();
+    tenantId = currentTenant?.id;
   }
-}
-
-export const deleteService = (serviceId: string, deletedBy: string, tenantId?: string): void => {
-  try {
-    // Si no se proporciona tenantId, intentar obtenerlo del contexto actual
-    if (!tenantId) {
-      const currentTenant = getCurrentTenantFromStorage()
-      tenantId = currentTenant?.id
-    }
-
-    // Si no hay tenant, no eliminar
-    if (!tenantId) {
-      console.warn("⚠️ No tenant ID available for deleting service")
-      return
-    }
-
-    const storageKey = getTenantStorageKey("services", tenantId)
-    const services = getServices(tenantId)
-    const serviceToDelete = services.find((s) => s.id === serviceId)
-
-    if (serviceToDelete) {
-      const filteredServices = services.filter((s) => s.id !== serviceId)
-      localStorage.setItem(storageKey, JSON.stringify(filteredServices))
-
-      // Invalidar caché
-      servicesCache.delete(tenantId);
-      servicesCacheTimestamp.delete(tenantId);
-
-      // ✅ Emitir evento
-      emitEvent(AppEvents.SERVICE_DELETED, {
-        service: serviceToDelete,
-        deletedBy,
-        tenantId: tenantId || getCurrentTenantFromStorage()?.id,
-        timestamp: new Date().toISOString(),
-      })
-
-      // Sincronizar con Supabase para compartir entre navegadores
-      syncToSupabase(SyncDataType.SERVICES);
-
-      console.log(`🗑️ Service deleted for tenant ${tenantId || "current"}:`, serviceId)
-    }
-  } catch (error) {
-    console.error("Error deleting service:", error)
-    throw error
+  if (!tenantId) {
+    console.warn('⚠️ No tenant ID available for creating service');
+    return null;
   }
-}
+  const newService: Service = {
+    ...serviceData,
+    id: uuidv4(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    isActive: true,
+  };
+  const ok = await saveServiceToSupabase(newService, tenantId);
+  return ok ? newService : null;
+};
+
+// Eliminar un servicio en Supabase
+export const deleteService = async (serviceId: string, deletedBy: string, tenantId?: string): Promise<boolean> => {
+  if (!tenantId) {
+    const currentTenant = getCurrentTenantFromStorage();
+    tenantId = currentTenant?.id;
+  }
+  if (!tenantId) {
+    console.warn('⚠️ No tenant ID available for deleting service');
+    return false;
+  }
+  return await deleteServiceFromSupabase(serviceId, tenantId);
+};
 
 // ✅ Funciones principales para productos - TENANT AWARE
 export const getProducts = (tenantId?: string): Product[] => {
@@ -462,41 +311,41 @@ export const deleteProduct = (productId: string, deletedBy: string, tenantId?: s
 }
 
 // ✅ Funciones para estadísticas - TENANT AWARE
-export const getServicesStatistics = (tenantId?: string): ServicesStatistics => {
+export const getServicesStatistics = async (tenantId?: string): Promise<ServicesStatistics> => {
   try {
-    const services = getServices(tenantId)
-    const products = getProducts(tenantId)
-    const priceHistory = getPriceHistory(tenantId)
+    const services = await getServices(tenantId);
+    const products = getProducts(tenantId);
+    const priceHistory = getPriceHistory(tenantId);
 
-    const activeServices = services.filter((s) => s.isActive !== false).length
-    const activeProducts = products.filter((p) => p.isActive !== false).length
+    const activeServices = services.filter((s) => s.isActive !== false).length;
+    const activeProducts = products.filter((p) => p.isActive !== false).length;
 
     const totalServicePrice = services
       .filter((s) => s.isActive !== false)
-      .reduce((sum, service) => sum + service.price, 0)
-    const avgServicePrice = activeServices > 0 ? totalServicePrice / activeServices : 0
+      .reduce((sum, service) => sum + service.price, 0);
+    const avgServicePrice = activeServices > 0 ? totalServicePrice / activeServices : 0;
 
     // Cambios de precio en los últimos 7 días
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    const recentPriceChanges = priceHistory.filter((history) => new Date(history.changedAt) > sevenDaysAgo).length
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const recentPriceChanges = priceHistory.filter((history) => new Date(history.changedAt) > sevenDaysAgo).length;
 
     return {
       activeServices,
       activeProducts,
       avgServicePrice,
       recentPriceChanges,
-    }
+    };
   } catch (error) {
-    console.error("Error getting services statistics:", error)
+    console.error("Error getting services statistics:", error);
     return {
       activeServices: 0,
       activeProducts: 0,
       avgServicePrice: 0,
       recentPriceChanges: 0,
-    }
+    };
   }
-}
+};
 
 // ✅ Funciones para historial de precios - TENANT AWARE
 export const getPriceHistory = (tenantId?: string): PriceHistory[] => {
@@ -540,19 +389,19 @@ export const getServicePriceHistory = (serviceId: string, tenantId?: string): Pr
 }
 
 // ✅ Función para actualización masiva de precios - TENANT AWARE
-export const bulkUpdatePrices = (
+export const bulkUpdatePrices = async (
   updates: { serviceId: string; newPrice: number }[],
   changedBy: string,
   tenantId?: string,
-): void => {
+): Promise<void> => {
   try {
-    const storageKey = getTenantStorageKey("services", tenantId)
-    const services = getServices(tenantId)
+    const storageKey = getTenantStorageKey("services", tenantId);
+    const services = await getServices(tenantId);
 
     updates.forEach(({ serviceId, newPrice }) => {
-      const serviceIndex = services.findIndex((s) => s.id === serviceId)
+      const serviceIndex = services.findIndex((s) => s.id === serviceId);
       if (serviceIndex >= 0) {
-        const oldPrice = services[serviceIndex].price
+        const oldPrice = services[serviceIndex].price;
 
         // Registrar cambio de precio
         savePriceHistory(
@@ -566,18 +415,18 @@ export const bulkUpdatePrices = (
             reason: "Actualización masiva",
           },
           tenantId,
-        )
+        );
 
         // Actualizar precio
         services[serviceIndex] = {
           ...services[serviceIndex],
           price: newPrice,
           updatedAt: new Date().toISOString(),
-        }
+        };
       }
-    })
+    });
 
-    localStorage.setItem(storageKey, JSON.stringify(services))
+    localStorage.setItem(storageKey, JSON.stringify(services));
 
     // Invalidar caché
     if (tenantId) {
@@ -591,28 +440,28 @@ export const bulkUpdatePrices = (
       changedBy,
       tenantId: tenantId || getCurrentTenantFromStorage()?.id,
       timestamp: new Date().toISOString(),
-    })
+    });
 
     // Sincronizar con Supabase para compartir entre navegadores
     syncToSupabase(SyncDataType.SERVICES);
 
-    console.log(`✅ Bulk price update completed for tenant ${tenantId || "current"}:`, updates.length, "services")
+    console.log(`✅ Bulk price update completed for tenant ${tenantId || "current"}:`, updates.length, "services");
   } catch (error) {
-    console.error("Error in bulk price update:", error)
-    throw error
+    console.error("Error in bulk price update:", error);
+    throw error;
   }
-}
+};
 
 // ✅ Funciones de utilidad adicionales - TENANT AWARE
-export const getServiceById = (serviceId: string, tenantId?: string): Service | null => {
+export const getServiceById = async (serviceId: string, tenantId?: string): Promise<Service | null> => {
   try {
-    const services = getServices(tenantId)
-    return services.find((service) => service.id === serviceId) || null
+    const services = await getServices(tenantId);
+    return services.find((service) => service.id === serviceId) || null;
   } catch (error) {
-    console.error("Error getting service by ID:", error)
-    return null
+    console.error("Error getting service by ID:", error);
+    return null;
   }
-}
+};
 
 export const getProductById = (productId: string, tenantId?: string): Product | null => {
   try {
@@ -624,19 +473,14 @@ export const getProductById = (productId: string, tenantId?: string): Product | 
   }
 }
 
-export const getServicesByCategory = (category: ServiceCategory, tenantId?: string): Service[] => {
-  try {
-    const services = getServices(tenantId)
-    return services.filter((service) => service.category === category && service.isActive !== false)
-  } catch (error) {
-    console.error("Error getting services by category:", error)
-    return []
-  }
+export const getServicesByCategory = async (category: ServiceCategory, tenantId?: string): Promise<Service[]> => {
+  const services = await getServices(tenantId);
+  return services.filter((service) => service.category === category && service.isActive !== false)
 }
 
-export const searchServices = (query: string, tenantId?: string): Service[] => {
+export const searchServices = async (query: string, tenantId?: string): Promise<Service[]> => {
   try {
-    const services = getServices(tenantId)
+    const services = await getServices(tenantId);
     const lowercaseQuery = query.toLowerCase()
 
     return services.filter(
@@ -724,23 +568,23 @@ export const clearServicesCache = (tenantId?: string): void => {
 }
 
 // ✅ Función para debugging
-export const debugServicesData = (tenantId?: string): void => {
+export const debugServicesData = async (tenantId?: string): Promise<void> => {
   // Si no se proporciona tenantId, intentar obtenerlo del contexto actual
   if (!tenantId) {
     const currentTenant = getCurrentTenantFromStorage();
     tenantId = currentTenant?.id;
   }
-  
+
   console.log("🔍 === SERVICES DEBUG ===");
   console.log("Current tenant ID:", tenantId || "No tenant");
-  
+
   if (tenantId) {
     console.log("Cache status for tenant:", tenantId, {
       hasCacheData: servicesCache.has(tenantId),
       cacheAge: servicesCache.has(tenantId) ? Date.now() - (servicesCacheTimestamp.get(tenantId) || 0) : "No cache",
       cacheSize: servicesCache.get(tenantId)?.length || 0,
     });
-    
+
     const storageKey = getTenantStorageKey("services", tenantId);
     const localStorageData = typeof window !== "undefined" ? localStorage.getItem(storageKey) : null;
     console.log("LocalStorage status for tenant:", tenantId, {
@@ -748,21 +592,21 @@ export const debugServicesData = (tenantId?: string): void => {
       dataSize: localStorageData ? JSON.parse(localStorageData).length : 0,
       storageKey
     });
-    
-    const currentData = getServices(tenantId);
+
+    const currentData = await getServices(tenantId);
     console.log("Current services data for tenant:", tenantId, {
       total: currentData.length,
       active: currentData.filter((s) => s.isActive !== false).length,
       names: currentData.map((s) => s.name),
     });
   }
-  
+
   // Mostrar todos los tenants con datos en caché
   console.log("All tenants with cached services data:", {
     tenantIds: Array.from(servicesCache.keys()),
     totalCachedTenants: servicesCache.size
   });
-  
+
   console.log("🔍 === END DEBUG ===");
 }
 

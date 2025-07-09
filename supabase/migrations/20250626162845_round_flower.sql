@@ -253,3 +253,9 @@ CREATE POLICY "Appointments can be deleted by tenant"
 ON appointments FOR DELETE 
 TO public
 USING (true);
+
+alter table public.staff
+  alter column specialties type text[]
+  using array(
+    select jsonb_array_elements_text(specialties)
+  );

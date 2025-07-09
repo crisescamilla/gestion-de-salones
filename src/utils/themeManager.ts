@@ -51,7 +51,7 @@ const getDefaultColors = (): ColorPalette => {
       secondary: tenant.secondaryColor,
       secondaryLight: lightenColor(tenant.secondaryColor, 0.3),
       secondaryDark: darkenColor(tenant.secondaryColor, 0.3),
-      accent: '#8b5cf6',
+      accent: '#3b82f6',
       accentLight: '#a78bfa',
       accentDark: '#7c3aed',
       success: '#10b981',
@@ -75,7 +75,7 @@ const getDefaultColors = (): ColorPalette => {
     secondary: '#06b6d4',
     secondaryLight: '#22d3ee',
     secondaryDark: '#0891b2',
-    accent: '#8b5cf6',
+    accent: '#3b82f6',
     accentLight: '#a78bfa',
     accentDark: '#7c3aed',
     success: '#10b981',
@@ -132,7 +132,7 @@ export const themePresets: ThemePreset[] = [
       secondary: '#06b6d4',
       secondaryLight: '#22d3ee',
       secondaryDark: '#0891b2',
-      accent: '#8b5cf6',
+      accent: '#3b82f6',
       accentLight: '#a78bfa',
       accentDark: '#7c3aed',
       success: '#10b981',
@@ -198,16 +198,16 @@ export const themePresets: ThemePreset[] = [
       text: '#1f2937',              // Gris muy oscuro
       textSecondary: '#6b7280',     // Gris medio
       border: '#f3e8ff',            // Lavanda muy claro
-      shadow: 'rgba(244, 63, 94, 0.15)'
+      shadow: 'rgba(170, 5, 5, 0.02)'
     }
   },
   {
     id: 'lavender-dream',
     name: 'Sueño Lavanda',
     description: 'Suaves tonos púrpura y lavanda para un ambiente relajante',
-    preview: 'linear-gradient(135deg, #8b5cf6, #a78bfa)',
+    preview: 'linear-gradient(135deg, #3b82f6, #a78bfa)',
     colors: {
-      primary: '#8b5cf6',           // Púrpura
+      primary: '#3b82f6',           // Púrpura
       primaryLight: '#a78bfa',      // Púrpura claro
       primaryDark: '#7c3aed',       // Púrpura oscuro
       secondary: '#c084fc',         // Lavanda
@@ -225,7 +225,7 @@ export const themePresets: ThemePreset[] = [
       text: '#1f2937',              // Gris muy oscuro
       textSecondary: '#6b7280',     // Gris medio
       border: '#e9d5ff',            // Púrpura muy claro
-      shadow: 'rgba(139, 92, 246, 0.15)'
+      shadow: 'rgba(36, 10, 169, 0.15)'
     }
   },
   {
@@ -321,7 +321,7 @@ export const themePresets: ThemePreset[] = [
       secondary: '#f59e0b',         // Dorado
       secondaryLight: '#fbbf24',    // Dorado claro
       secondaryDark: '#d97706',     // Dorado oscuro
-      accent: '#8b5cf6',            // Púrpura
+      accent: '#3b82f6',            // Púrpura
       accentLight: '#a78bfa',       // Púrpura claro
       accentDark: '#7c3aed',        // Púrpura oscuro
       success: '#10b981',           // Verde
@@ -360,7 +360,7 @@ export const themePresets: ThemePreset[] = [
       text: '#1f2937',              // Gris muy oscuro
       textSecondary: '#6b7280',     // Gris medio
       border: '#fce7f3',            // Rosa muy claro
-      shadow: 'rgba(253, 164, 175, 0.15)'
+      shadow: 'rgba(229, 28, 28, 0.15)'
     }
   },
   {
@@ -391,7 +391,7 @@ export const themePresets: ThemePreset[] = [
     }
   },
   {
-    id: 'royal-purple',
+    id: 'royal-blue',
     name: 'Púrpura Real',
     description: 'Majestuosos púrpuras con toques plateados para máxima elegancia',
     preview: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
@@ -414,7 +414,7 @@ export const themePresets: ThemePreset[] = [
       text: '#1f2937',              // Gris muy oscuro
       textSecondary: '#6b7280',     // Gris medio
       border: '#e9d5ff',            // Púrpura muy claro
-      shadow: 'rgba(124, 58, 237, 0.15)'
+      shadow: 'rgba(64, 58, 237, 0.15)'
     }
   },
   {
@@ -441,7 +441,7 @@ export const themePresets: ThemePreset[] = [
       text: '#1f2937',              // Gris muy oscuro
       textSecondary: '#6b7280',     // Gris medio
       border: '#fed7aa',            // Coral muy claro
-      shadow: 'rgba(255, 120, 73, 0.15)'
+      shadow: 'rgba(238, 77, 52, 0.15)'
     }
   },
   {

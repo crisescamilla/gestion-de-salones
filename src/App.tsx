@@ -168,11 +168,11 @@ function App() {
         ></div>
         <div 
           className="absolute top-40 right-20 w-48 h-48 rounded-full blur-3xl"
-          style={{ background: `linear-gradient(135deg, ${colors?.secondary || '#06b6d4'}, ${colors?.accent || '#8b5cf6'})` }}
+          style={{ background: `linear-gradient(135deg, ${colors?.secondary || '#06b6d4'}, ${colors?.accent || '#3b82f6'})` }}
         ></div>
         <div 
           className="absolute bottom-40 left-1/4 w-40 h-40 rounded-full blur-3xl"
-          style={{ background: `linear-gradient(135deg, ${colors?.accent || '#8b5cf6'}, ${colors?.primary || '#0ea5e9'})` }}
+          style={{ background: `linear-gradient(135deg, ${colors?.accent || '#3b82f6'}, ${colors?.primary || '#0ea5e9'})` }}
         ></div>
         <div 
           className="absolute bottom-20 right-1/3 w-36 h-36 rounded-full blur-3xl"
@@ -201,7 +201,7 @@ function App() {
           <h1 
             className="text-5xl md:text-6xl font-bold mb-6 theme-transition"
             style={{ 
-              background: `linear-gradient(135deg, ${colors?.primary || '#0ea5e9'}, ${colors?.secondary || '#06b6d4'}, ${colors?.accent || '#8b5cf6'})`,
+              background: `linear-gradient(135deg, ${colors?.primary || '#0ea5e9'}, ${colors?.secondary || '#06b6d4'}, ${colors?.accent || '#3b82f6'})`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text'
@@ -313,7 +313,7 @@ function App() {
           >
             <div 
               className="p-8 text-white text-center theme-transition"
-              style={{ background: `linear-gradient(135deg, ${colors?.primary || '#0ea5e9'}, ${colors?.secondary || '#06b6d4'}, ${colors?.accent || '#8b5cf6'})` }}
+              style={{ background: `linear-gradient(135deg, ${colors?.primary || '#0ea5e9'}, ${colors?.secondary || '#06b6d4'}, ${colors?.accent || '#3b82f6'})` }}
             >
               <h2 className="text-3xl font-bold mb-2">📍 Visítanos</h2>
               <p className="opacity-90">Información de contacto y ubicación</p>
@@ -395,9 +395,9 @@ function App() {
                 <div className="text-center group">
                   <div 
                     className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-md theme-transition"
-                    style={{ backgroundColor: `${colors?.accent || '#8b5cf6'}1a` }}
+                    style={{ backgroundColor: `${colors?.accent || '#3b82f6'}1a` }}
                   >
-                    <Phone className="w-8 h-8" style={{ color: colors?.accent || '#8b5cf6' }} />
+                    <Phone className="w-8 h-8" style={{ color: colors?.accent || '#3b82f6' }} />
                   </div>
                   <h3 
                     className="text-lg font-semibold mb-2 theme-transition"
@@ -476,7 +476,7 @@ function App() {
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="flex items-center justify-center space-x-2 transition-colors theme-transition"
-                        style={{ color: colors?.accent || '#8b5cf6' }}
+                        style={{ color: colors?.accent || '#3b82f6' }}
                       >
                         <Globe className="w-4 h-4" />
                         <span className="text-sm font-medium">Sitio Web</span>
@@ -547,7 +547,7 @@ function App() {
       <button
         onClick={handleAdminAccess}
         className="fixed bottom-6 right-6 z-50 group text-white p-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 theme-transition"
-        style={{ background: `linear-gradient(135deg, ${colors?.accent || '#8b5cf6'}, ${colors?.primary || '#0ea5e9'})` }}
+        style={{ background: `linear-gradient(135deg, ${colors?.accent || '#3b82f6'}, ${colors?.primary || '#3b82f6'})` }}
         title="Panel Administrativo"
       >
         <Settings className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" />
@@ -570,7 +570,7 @@ function App() {
         {/* Pulse animation ring */}
         <div 
           className="absolute inset-0 rounded-full opacity-30 animate-ping theme-transition"
-          style={{ backgroundColor: colors?.accent || '#8b5cf6' }}
+          style={{ backgroundColor: colors?.accent || '#3b82f6' }}
         ></div>
       </button>
       

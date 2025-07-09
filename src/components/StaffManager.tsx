@@ -174,7 +174,7 @@ const StaffManager: React.FC = () => {
             className="text-2xl font-bold flex items-center theme-transition"
             style={{ color: colors?.text || '#1f2937' }}
           >
-            <UserCog className="w-8 h-8 mr-3" style={{ color: colors?.accent || '#8b5cf6' }} />
+            <UserCog className="w-8 h-8 mr-3" style={{ color: colors?.accent || '#3b82f6' }} />
             Gestión de Personal
           </h2>
           <p 
@@ -218,7 +218,7 @@ const StaffManager: React.FC = () => {
           <button
             onClick={() => setShowAddForm(true)}
             className="flex items-center px-4 py-2 text-white rounded-lg transition-colors theme-transition"
-            style={{ backgroundColor: colors?.accent || '#8b5cf6' }}
+            style={{ backgroundColor: colors?.accent || '#3b82f6' }}
           >
             <Plus className="w-4 h-4 mr-2" />
             Agregar Especialista
@@ -944,7 +944,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
               <button
                 type="submit"
                 className="flex-1 px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center theme-transition"
-                style={{ backgroundColor: colors?.accent || '#8b5cf6' }}
+                style={{ backgroundColor: colors?.accent || '#3b82f6' }}
                 disabled={loading || formData.specialties.length === 0}
               >
                 {loading ? (

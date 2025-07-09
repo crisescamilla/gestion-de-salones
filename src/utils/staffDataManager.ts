@@ -3,6 +3,7 @@ import type { StaffMember, ServiceCategory } from "../types"
 import { emitEvent, subscribeToEvent, AppEvents } from "./eventManager"
 import { getCurrentTenant } from "./tenantManager"
 import { syncToSupabase, SyncDataType } from "./crossBrowserSync"
+import { saveStaffToSupabase, deleteStaffFromSupabase } from './staffSupabase'
 
 // ✅ MODIFICADO: Clave de almacenamiento con prefijo para tenant
 const getStaffStorageKey = (tenantId?: string): string => {
@@ -287,7 +288,7 @@ export const isStaffAvailableOnDay = (staffId: string, dayOfWeek: string, forceR
 }
 
 // ✅ Función para guardar datos de personal
-export const saveStaffMember = (staffMember: StaffMember, tenantId?: string): void => {
+export const saveStaffMember = async (staffMember: StaffMember, tenantId?: string): Promise<void> => {
   // Obtener el tenant actual si no se proporciona uno
   if (!tenantId) {
     const currentTenant = getCurrentTenant()
@@ -322,6 +323,9 @@ export const saveStaffMember = (staffMember: StaffMember, tenantId?: string): vo
 
     localStorage.setItem(storageKey, JSON.stringify(allStaff))
     
+    // Guardar en Supabase
+    await saveStaffToSupabase(staffMember, tenantId);
+
     // Invalidar caché para este tenant
     invalidateStaffCache(tenantId)
     
@@ -342,7 +346,7 @@ export const saveStaffMember = (staffMember: StaffMember, tenantId?: string): vo
 }
 
 // ✅ Función para eliminar miembro del personal
-export const deleteStaffMember = (staffId: string, tenantId?: string): boolean => {
+export const deleteStaffMember = async (staffId: string, tenantId?: string): Promise<boolean> => {
   // Obtener el tenant actual si no se proporciona uno
   if (!tenantId) {
     const currentTenant = getCurrentTenant()
@@ -368,6 +372,9 @@ export const deleteStaffMember = (staffId: string, tenantId?: string): boolean =
     const updatedStaff = allStaff.filter((s) => s.id !== staffId)
     localStorage.setItem(storageKey, JSON.stringify(updatedStaff))
     
+    // Eliminar en Supabase
+    await deleteStaffFromSupabase(staffId, tenantId);
+
     // Invalidar caché para este tenant
     invalidateStaffCache(tenantId)
     
