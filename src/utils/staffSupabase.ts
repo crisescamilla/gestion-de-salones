@@ -1,9 +1,11 @@
 import { supabase } from './supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 import type { StaffMember } from '../types';
 
+// Mapear StaffMember al formato de Supabase
 function mapStaffToSupabase(staff: StaffMember, tenantId: string) {
   return {
-    id: staff.id,
+    id: staff.id || uuidv4(),
     tenant_id: tenantId,
     name: staff.name,
     role: staff.role,
@@ -20,48 +22,19 @@ function mapStaffToSupabase(staff: StaffMember, tenantId: string) {
   };
 }
 
-// Guardar (insertar o actualizar) un especialista en Supabase
-export async function saveStaffToSupabase(staff: StaffMember, tenantId: string): Promise<boolean> {
-  const staffToSave = mapStaffToSupabase(staff, tenantId);
-  console.log('Intentando guardar en Supabase:', staffToSave);
-  const { error } = await supabase
-    .from('staff')
-    .upsert([staffToSave], { onConflict: 'id' });
-  if (error) {
-    console.error('Error saving staff to Supabase:', error);
-    return false;
-  }
-  console.log('Guardado exitoso en Supabase');
-  return true;
-}
-
-// Eliminar un especialista de Supabase
-export async function deleteStaffFromSupabase(staffId: string, tenantId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('staff')
-    .delete()
-    .eq('id', staffId)
-    .eq('tenant_id', tenantId);
-
-  if (error) {
-    console.error('Error deleting staff from Supabase:', error);
-    return false;
-  }
-  return true;
-}
-
 // Obtener todos los especialistas de un tenant desde Supabase
 export async function getStaffFromSupabase(tenantId: string): Promise<StaffMember[]> {
   const { data, error } = await supabase
     .from('staff')
     .select('*')
-    .eq('tenant_id', tenantId);
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: true });
 
   if (error) {
     console.error('Error fetching staff from Supabase:', error);
     return [];
   }
-  // Mapea los campos de la base de datos al formato de la app
+
   return (data || []).map((s: any) => ({
     id: s.id,
     name: s.name,
@@ -77,4 +50,33 @@ export async function getStaffFromSupabase(tenantId: string): Promise<StaffMembe
     createdAt: s.created_at,
     updatedAt: s.updated_at,
   })) as StaffMember[];
-} 
+}
+
+// Guardar (insertar o actualizar) un especialista
+export async function saveStaffToSupabase(staff: StaffMember, tenantId: string): Promise<boolean> {
+  const staffToSave = mapStaffToSupabase(staff, tenantId);
+  const { error } = await supabase
+    .from('staff')
+    .upsert([staffToSave], { onConflict: 'id' });
+
+  if (error) {
+    console.error('Error saving staff to Supabase:', error);
+    return false;
+  }
+  return true;
+}
+
+// Eliminar un especialista
+export async function deleteStaffFromSupabase(staffId: string, tenantId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('staff')
+    .delete()
+    .eq('id', staffId)
+    .eq('tenant_id', tenantId);
+
+  if (error) {
+    console.error('Error deleting staff from Supabase:', error);
+    return false;
+  }
+  return true;
+}

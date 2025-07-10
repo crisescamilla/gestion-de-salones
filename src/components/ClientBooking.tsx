@@ -835,7 +835,7 @@ const ClientBooking: React.FC = () => {
                       <strong>Para cambios o cancelaciones:</strong>
                     </p>
                     <p>
-                      📱 Teléfono: <strong>664-563-6423</strong>
+                      
                     </p>
                     <p>⚠️ Mínimo 24 horas de anticipación</p>
                   </div>
