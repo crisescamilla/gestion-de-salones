@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
 import { ensureTenantExistsInSupabase } from './tenantManager';
-import { saveStaffToSupabase, deleteStaffFromSupabase } from './staffSupabase'
 
 // Obtener las variables de entorno
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
