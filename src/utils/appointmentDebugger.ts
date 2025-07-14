@@ -22,7 +22,7 @@ export const debugAppointments = (): AppointmentDebugInfo[] => {
   console.log("📊 Data loaded:", {
     appointments: appointments.length,
     clients: clients.length,
-    services: services.length,
+    services: Array.isArray(services) ? services.length : 0,
     staff: staffMembers.length,
   })
 
@@ -33,7 +33,9 @@ export const debugAppointments = (): AppointmentDebugInfo[] => {
 
   const debugResults: AppointmentDebugInfo[] = appointments.map((appointment) => {
     const client = clients.find((c) => c.id === appointment.clientId) || null
-    const appointmentServices = services.filter((s) => appointment.serviceIds.includes(s.id))
+    const appointmentServices = Array.isArray(services)
+      ? services.filter((s: Service) => appointment.serviceIds.includes(s.id))
+      : []
     const staff = staffMembers.find((s) => s.id === appointment.staffId) || null
 
     const issues: string[] = []
@@ -136,9 +138,11 @@ export const debugSpecificAppointment = (appointmentId: string): AppointmentDebu
     return null
   }
 
-  const client = clients.find((c) => c.id === appointment.clientId) || null
-  const appointmentServices = services.filter((s) => appointment.serviceIds.includes(s.id))
-  const staff = staffMembers.find((s) => s.id === appointment.staffId) || null
+  const client = clients.find((c: any) => c.id === appointment.clientId) || null
+  const appointmentServices = Array.isArray(services)
+    ? services.filter((s: any) => appointment.serviceIds.includes(s.id))
+    : []
+  const staff = staffMembers.find((s: any) => s.id === appointment.staffId) || null
 
   const issues: string[] = []
 
