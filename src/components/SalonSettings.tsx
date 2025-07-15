@@ -20,9 +20,14 @@ import {
   saveSalonSettings,
   getSalonSettingsHistory,
   saveSalonSettingsHistory,
+  getSalonSettingsFromSupabase,
+  saveSalonSettingsToSupabase,
 } from "../utils/salonSettings"
 import { getCurrentUser } from "../utils/auth"
 import { useTheme } from "../hooks/useTheme"
+import { getCurrentTenant } from "../utils/tenantManager"
+import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../utils/supabaseClient';
 
 const SalonSettings: React.FC = () => {
   const [settings, setSettings] = useState<SalonSettingsType>(getSalonSettings())
@@ -54,28 +59,79 @@ const SalonSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"basic" | "contact" | "hours">("basic")
 
   const currentUser = getCurrentUser()
+  const currentTenant = getCurrentTenant()
 
   // Real-time theme
   const { colors } = useTheme()
 
+  const fetchFromSupabase = async () => {
+    if (!currentTenant?.id) return;
+    try {
+      const dbSettings = await getSalonSettingsFromSupabase(currentTenant.id);
+      if (dbSettings) {
+        setSettings({
+          id: dbSettings.id,
+          salonName: dbSettings.salon_name,
+          salonMotto: dbSettings.salon_motto,
+          address: dbSettings.address,
+          phone: dbSettings.phone,
+          email: dbSettings.email,
+          whatsapp: dbSettings.whatsapp,
+          instagram: dbSettings.instagram,
+          facebook: dbSettings.facebook,
+          website: dbSettings.website,
+          logo: dbSettings.logo,
+          hours: dbSettings.hours,
+          updatedAt: dbSettings.updated_at,
+          updatedBy: dbSettings.updated_by,
+        });
+        setFormData({
+          salonName: dbSettings.salon_name,
+          salonMotto: dbSettings.salon_motto,
+          address: dbSettings.address,
+          phone: dbSettings.phone,
+          email: dbSettings.email,
+          whatsapp: dbSettings.whatsapp,
+          instagram: dbSettings.instagram,
+          facebook: dbSettings.facebook,
+          website: dbSettings.website,
+          logo: dbSettings.logo,
+          hours: dbSettings.hours,
+        });
+      }
+    } catch (e) {
+      setMessage({ type: "error", text: "No se pudo cargar la configuración desde Supabase" });
+    }
+  };
+
+  // Cargar configuración desde Supabase al montar
   useEffect(() => {
-    const currentSettings = getSalonSettings()
-    setSettings(currentSettings)
-    setFormData((prev) => ({
-      ...prev,
-      salonName: currentSettings.salonName,
-      salonMotto: currentSettings.salonMotto,
-      address: currentSettings.address || prev.address,
-      phone: currentSettings.phone || prev.phone,
-      email: currentSettings.email || prev.email,
-      whatsapp: currentSettings.whatsapp || prev.whatsapp,
-      instagram: currentSettings.instagram || prev.instagram,
-      facebook: currentSettings.facebook || prev.facebook,
-      website: currentSettings.website || prev.website,
-      logo: currentSettings.logo || prev.logo,
-      hours: currentSettings.hours || prev.hours,
-    }))
-  }, [])
+    fetchFromSupabase();
+  }, []);
+
+  // Suscripción en tiempo real a cambios en salon_settings
+  useEffect(() => {
+    if (!currentTenant?.id) return;
+    const channel = supabase
+      .channel('salon-settings-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'salon_settings',
+          filter: `tenant_id=eq.${currentTenant.id}`,
+        },
+        (payload) => {
+          // Recargar configuración silenciosamente
+          fetchFromSupabase();
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentTenant?.id]);
 
   useEffect(() => {
     // Clear message after 5 seconds
@@ -105,58 +161,60 @@ const SalonSettings: React.FC = () => {
   }
 
   const handleSaveChanges = async () => {
-    if (!currentUser) {
-      setMessage({ type: "error", text: "Usuario no autenticado" })
-      return
+    if (!currentUser || !currentTenant?.id) {
+      setMessage({ type: "error", text: "Usuario o tenant no autenticado" });
+      return;
     }
-
     setLoading(true)
     setMessage(null)
-
     try {
       const oldSettings = getSalonSettings()
-
-      console.log("🕒 Saving hours settings:", formData.hours)
-      console.log("🕒 Sunday isOpen status:", formData.hours.sunday.isOpen)
-
-      // Save all settings
+      // Guardar en Supabase
+      const saved = await saveSalonSettingsToSupabase(currentTenant.id, {
+        salon_name: formData.salonName,
+        salon_motto: formData.salonMotto,
+        address: formData.address,
+        phone: formData.phone,
+        email: formData.email,
+        whatsapp: formData.whatsapp,
+        instagram: formData.instagram,
+        facebook: formData.facebook,
+        website: formData.website,
+        logo: formData.logo,
+        hours: formData.hours,
+        updated_at: new Date().toISOString(),
+        updated_by: currentUser.username,
+      });
+      // Guardar en localStorage
       const result = saveSalonSettings(
         {
-          salonName: formData.salonName,
-          salonMotto: formData.salonMotto,
-          address: formData.address,
-          phone: formData.phone,
-          email: formData.email,
-          whatsapp: formData.whatsapp,
-          instagram: formData.instagram,
-          facebook: formData.facebook,
-          website: formData.website,
-          logo: formData.logo,
-          hours: formData.hours,
+          salonName: saved.salon_name,
+          salonMotto: saved.salon_motto,
+          address: saved.address,
+          phone: saved.phone,
+          email: saved.email,
+          whatsapp: saved.whatsapp,
+          instagram: saved.instagram,
+          facebook: saved.facebook,
+          website: saved.website,
+          logo: saved.logo,
+          hours: saved.hours,
+          updatedAt: saved.updated_at,
+          updatedBy: saved.updated_by,
         },
         currentUser.username,
       )
-
       if (result.success) {
-        const newSettings = getSalonSettings()
-        setSettings(newSettings)
-
-        // Save to history if there were actual changes
-        saveSalonSettingsHistory(oldSettings, newSettings)
+        setSettings(getSalonSettings())
+        saveSalonSettingsHistory(oldSettings, getSalonSettings())
         setHistory(getSalonSettingsHistory())
-
         setMessage({ type: "success", text: "¡Configuración guardada exitosamente!" })
-        
-        // Force refresh to ensure UI updates
-        setTimeout(() => {
-          window.location.reload()
-        }, 1500)
+        setTimeout(() => { window.location.reload() }, 1500)
       } else {
         setMessage({ type: "error", text: result.error || "Error al guardar" })
       }
     } catch (error) {
-      console.error("Error saving salon settings:", error)
-      setMessage({ type: "error", text: "Error del sistema al guardar la configuración" })
+      setMessage({ type: "error", text: "Error al guardar en Supabase" })
     } finally {
       setLoading(false)
     }

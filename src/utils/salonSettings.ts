@@ -1,6 +1,7 @@
 import type { SalonSettings } from "../types"
 import { getCurrentTenant } from "./tenantManager"
 import { syncToSupabase, SyncDataType } from "./crossBrowserSync"
+import { supabase } from './supabaseClient';
 
 const STORAGE_KEY = "beauty-salon-settings"
 
@@ -202,6 +203,33 @@ export const saveSalonSettingsHistory = (oldSettings: SalonSettings, newSettings
   }
 
   localStorage.setItem(getTenantStorageKey("beauty-salon-settings-history"), JSON.stringify(history))
+}
+
+/**
+ * Obtiene la configuración del salón desde Supabase para el tenant actual.
+ */
+export async function getSalonSettingsFromSupabase(tenant_id: string) {
+  const { data, error } = await supabase
+    .from('salon_settings')
+    .select('*')
+    .eq('tenant_id', tenant_id)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Guarda (inserta o actualiza) la configuración del salón en Supabase.
+ */
+export async function saveSalonSettingsToSupabase(tenant_id: string, settings: any) {
+  // Intenta actualizar primero
+  const { data, error } = await supabase
+    .from('salon_settings')
+    .upsert({ ...settings, tenant_id }, { onConflict: 'tenant_id' })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
 }
 
 // Real-time salon name getter for components
