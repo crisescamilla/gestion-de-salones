@@ -33,7 +33,11 @@ import {
   importTheme,
   resetToDefaultTheme,
   validateColorPalette,
-  generateColorVariations
+  generateColorVariations,
+  getThemeSettingsFromSupabase,
+  createThemeSettingsInSupabase,
+  updateThemeSettingsInSupabase,
+  setActiveThemeInSupabase
 } from '../utils/themeManager';
 import { getCurrentUser } from '../utils/auth';
 import { getCurrentTenant, saveTenant } from '../utils/tenantManager';
@@ -85,7 +89,7 @@ const ThemeManager: React.FC = () => {
   const currentTenant = getCurrentTenant();
 
   useEffect(() => {
-    loadThemes();
+    loadThemesFromSupabase();
     loadLogo();
   }, []);
 
@@ -96,11 +100,24 @@ const ThemeManager: React.FC = () => {
     }
   }, [message]);
 
-  const loadThemes = () => {
-    const allThemes = getThemes();
-    const active = getActiveTheme();
-    setThemes(allThemes);
-    setSelectedTheme(active);
+  const loadThemesFromSupabase = async () => {
+    if (!currentTenant?.id) return;
+    try {
+      setLoading(true);
+      const themesFromDb = await getThemeSettingsFromSupabase(currentTenant.id);
+      setThemes(themesFromDb || []);
+      setSelectedTheme(themesFromDb?.find((t: any) => t.is_active) || null);
+      // Sincroniza los temas de Supabase a localStorage
+      if (themesFromDb && Array.isArray(themesFromDb)) {
+        themesFromDb.forEach((theme: any) => {
+          saveTheme({ ...theme, isActive: theme.is_active, isDefault: theme.is_default });
+        });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Error al cargar temas desde Supabase' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loadLogo = () => {
@@ -115,25 +132,23 @@ const ThemeManager: React.FC = () => {
     }
   };
 
-  const handleApplyTheme = (themeId: string) => {
+  const handleApplyTheme = async (themeId: string) => {
+    if (!currentTenant?.id) return;
     setLoading(true);
     try {
-      const success = setActiveTheme(themeId);
-      if (success) {
-        loadThemes();
-        setMessage({ type: 'success', text: '¡Tema aplicado exitosamente!' });
-      } else {
-        setMessage({ type: 'error', text: 'Error al aplicar el tema' });
-      }
+      await setActiveThemeInSupabase(currentTenant.id, themeId);
+      await loadThemesFromSupabase();
+      setActiveTheme(themeId); // Aplica el tema visualmente y en localStorage
+      setMessage({ type: 'success', text: '¡Tema aplicado exitosamente!' });
     } catch (error) {
-      setMessage({ type: 'error', text: 'Error del sistema al aplicar el tema' });
+      setMessage({ type: 'error', text: 'Error al aplicar el tema' });
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSaveCustomTheme = () => {
-    if (!currentUser) return;
+  const handleSaveCustomTheme = async () => {
+    if (!currentUser || !currentTenant?.id) return;
 
     const validation = validateColorPalette(customTheme.colors || {});
     if (!validation.isValid) {
@@ -148,27 +163,30 @@ const ThemeManager: React.FC = () => {
 
     setLoading(true);
     try {
-      const theme: ThemeSettings = {
-        id: customTheme.id || Date.now().toString(),
-        name: customTheme.name.trim(),
-        description: customTheme.description?.trim() || '',
-        colors: customTheme.colors as ColorPalette,
-        isDefault: false,
-        isActive: false,
-        createdAt: customTheme.id ? (selectedTheme?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: currentUser.username
-      };
-
-      saveTheme(theme);
-      loadThemes();
+      let theme;
+      if (customTheme.id) {
+        // Actualizar tema existente
+        theme = await updateThemeSettingsInSupabase(customTheme.id, {
+          ...customTheme,
+          updated_at: new Date().toISOString(),
+        });
+      } else {
+        // Crear nuevo tema
+        theme = await createThemeSettingsInSupabase({
+          ...customTheme,
+          tenant_id: currentTenant.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          created_by: currentUser.username,
+          is_default: false,
+          is_active: false,
+        });
+      }
       setIsEditing(false);
       setMessage({ type: 'success', text: customTheme.id ? 'Tema actualizado exitosamente' : 'Tema creado exitosamente' });
-      
-      // Sync themes to Supabase
-      syncToSupabase(SyncDataType.THEMES);
+      await loadThemesFromSupabase();
     } catch (error) {
-      setMessage({ type: 'error', text: 'Error al guardar el tema' });
+      setMessage({ type: 'error', text: 'Error al guardar el tema en Supabase' });
     } finally {
       setLoading(false);
     }
@@ -179,7 +197,7 @@ const ThemeManager: React.FC = () => {
 
     const success = deleteTheme(themeId);
     if (success) {
-      loadThemes();
+      loadThemesFromSupabase();
       setMessage({ type: 'success', text: 'Tema eliminado exitosamente' });
       
       // Sync themes to Supabase
@@ -189,17 +207,40 @@ const ThemeManager: React.FC = () => {
     }
   };
 
-  const handleCreateFromPreset = (presetId: string) => {
-    if (!currentUser) return;
+  const handleCreateFromPreset = async (presetId: string) => {
+    if (!currentUser || !currentTenant?.id) return;
+    try {
+      setLoading(true);
+      const presetTheme = createThemeFromPreset(presetId, undefined, currentUser.username);
+      if (presetTheme) {
+        // Elimina todas las propiedades camelCase que no existen en la tabla
+        const {
+          id,
+          createdAt,
+          updatedAt,
+          createdBy,
+          isActive,
+          isDefault,
+          ...rest
+        } = presetTheme;
 
-    const theme = createThemeFromPreset(presetId, undefined, currentUser.username);
-    if (theme) {
-      loadThemes();
-      setMessage({ type: 'success', text: 'Tema creado desde preset exitosamente' });
-      setShowPresets(false);
-      
-      // Sync themes to Supabase
-      syncToSupabase(SyncDataType.THEMES);
+        await createThemeSettingsInSupabase({
+          ...rest,
+          tenant_id: currentTenant.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          created_by: currentUser.username,
+          is_default: false,
+          is_active: false,
+        });
+        setMessage({ type: 'success', text: 'Tema creado desde preset exitosamente' });
+        setShowPresets(false);
+        await loadThemesFromSupabase();
+      }
+    } catch (error: any) {
+      setMessage({ type: 'error', text: 'Error al crear tema desde preset en Supabase: ' + (error?.message || JSON.stringify(error)) });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -228,7 +269,7 @@ const ThemeManager: React.FC = () => {
       const content = e.target?.result as string;
       const theme = importTheme(content, currentUser.username);
       if (theme) {
-        loadThemes();
+        loadThemesFromSupabase();
         setMessage({ type: 'success', text: 'Tema importado exitosamente' });
         
         // Sync themes to Supabase

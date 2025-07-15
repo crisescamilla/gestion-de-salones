@@ -1,6 +1,61 @@
 import { useEffect } from 'react';
 import { ThemeSettings, ColorPalette, ThemePreset } from '../types';
 import { getCurrentTenant } from './tenantManager';
+import { supabase } from './supabaseClient';
+
+export async function getThemeSettingsFromSupabase(tenant_id: string) {
+  const { data, error } = await supabase
+    .from('theme_settings')
+    .select('*')
+    .eq('tenant_id', tenant_id);
+  if (error) throw error;
+  return data;
+}
+
+export async function updateThemeSettingsInSupabase(id: string, updates: any) {
+  const { data, error } = await supabase
+    .from('theme_settings')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function createThemeSettingsInSupabase(themeSettings: any) {
+  const { data, error } = await supabase
+    .from('theme_settings')
+    .insert([themeSettings])
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Activa un tema en Supabase y desactiva los demás para el tenant dado.
+ * @param tenant_id string
+ * @param theme_id string
+ */
+export async function setActiveThemeInSupabase(tenant_id: string, theme_id: string) {
+  // Desactivar todos los temas del tenant
+  const { error: errorDeactivate } = await supabase
+    .from('theme_settings')
+    .update({ is_active: false })
+    .eq('tenant_id', tenant_id);
+  if (errorDeactivate) throw errorDeactivate;
+
+  // Activar el tema seleccionado
+  const { data, error: errorActivate } = await supabase
+    .from('theme_settings')
+    .update({ is_active: true })
+    .eq('id', theme_id)
+    .select()
+    .single();
+  if (errorActivate) throw errorActivate;
+  return data;
+}
 
 const STORAGE_KEY = 'beauty-salon-themes';
 const ACTIVE_THEME_KEY = 'beauty-salon-active-theme';

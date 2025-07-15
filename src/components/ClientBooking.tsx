@@ -3,12 +3,12 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Calendar, Clock, User, Mail, CheckCircle, MessageSquare, Send, AlertCircle, Users, Info } from "lucide-react"
-import type { Client, Appointment, Service } from "../types"
+import type { Client, Service } from "../types"
 import { saveClientToSupabase, getClientsFromSupabase } from '../utils/clientsSupabase';
 import { createAppointment } from '../utils/appointmentsSupabase';
 import { getCurrentTenant } from '../utils/tenantManager';
 import { formatDateTime, generateDateRange, getTodayString } from "../utils/dateUtils"
-import { sendAppointmentConfirmation, saveNotificationHistory } from "../utils/notifications"
+import { sendAppointmentConfirmation } from "../utils/notifications"
 import { useStaffById } from "../hooks/useStaffData"
 import { useSalonName, useSalonMotto, useSalonHours } from "../hooks/useSalonSettings"
 import { useTheme } from "../hooks/useTheme"

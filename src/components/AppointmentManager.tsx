@@ -353,7 +353,7 @@ const AppointmentManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
+            <h1 className="text-xl font-bold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
               Gestión de Citas
             </h1>
             {newAppointmentCount > 0 && (
