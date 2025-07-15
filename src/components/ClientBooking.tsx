@@ -4,7 +4,9 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Calendar, Clock, User, Mail, CheckCircle, MessageSquare, Send, AlertCircle, Users, Info } from "lucide-react"
 import type { Client, Appointment, Service } from "../types"
-import { saveClient, saveAppointment } from "../utils/storage"
+import { saveClientToSupabase, getClientsFromSupabase } from '../utils/clientsSupabase';
+import { createAppointment } from '../utils/appointmentsSupabase';
+import { getCurrentTenant } from '../utils/tenantManager';
 import { formatDateTime, generateDateRange, getTodayString } from "../utils/dateUtils"
 import { sendAppointmentConfirmation, saveNotificationHistory } from "../utils/notifications"
 import { useStaffById } from "../hooks/useStaffData"
@@ -168,58 +170,65 @@ const ClientBooking: React.FC = () => {
         return
       }
 
+      const currentTenant = getCurrentTenant();
+      if (!currentTenant?.id) {
+        alert('No se encontró el negocio actual.');
+        setNotificationStatus({ sms: null, email: null, loading: false })
+        return;
+      }
+
+      // Guardar cliente en Supabase
       const client: Client = {
-        id: Date.now().toString(),
+        id: '', // Será reemplazado por Supabase
         fullName: clientData.fullName!,
-        phone: phoneValidationResult.sanitized || clientData.phone!, // Use sanitized phone
+        phone: clientData.phone!,
         email: clientData.email!,
         createdAt: new Date().toISOString(),
+      };
+      const ok = await saveClientToSupabase(client, currentTenant.id);
+      if (!ok) {
+        alert('Error al guardar el cliente en Supabase. Intenta de nuevo.');
+        setNotificationStatus({ sms: null, email: null, loading: false })
+        return;
       }
-
-      saveClient(client)
-
-      const appointment: Appointment = {
-        id: Date.now().toString(),
-        clientId: client.id,
-        serviceIds: selectedServices.map((s) => s.id),
-        staffId: selectedStaffId,
+      // Recuperar el id generado
+      const updatedClients = await getClientsFromSupabase(currentTenant.id);
+      const savedClient = updatedClients.find(c => c.email === client.email && c.phone === client.phone);
+      if (!savedClient) {
+        alert('No se pudo recuperar el cliente guardado. Intenta de nuevo.');
+        setNotificationStatus({ sms: null, email: null, loading: false })
+        return;
+      }
+      // Guardar cita en Supabase
+      const appointmentData = {
+        tenant_id: currentTenant.id,
+        client_id: savedClient.id,
+        staff_id: selectedStaffId,
+        service_ids: selectedServices.map((s) => s.id),
         date: selectedDate,
         time: selectedTime,
-        status: "confirmed",
-        totalPrice: selectedServices.reduce((sum, service) => sum + service.price, 0),
-        createdAt: new Date().toISOString(),
-      }
-
-      saveAppointment(appointment)
+        status: 'confirmed',
+        total_price: selectedServices.reduce((sum, service) => sum + service.price, 0),
+        notes: '',
+      };
+      const createdAppointment = await createAppointment(appointmentData);
 
       // Send notifications
       try {
-        const notificationResult = await sendAppointmentConfirmation(client, appointment, selectedServices)
+        const notificationResult = await sendAppointmentConfirmation(savedClient, createdAppointment, selectedServices)
 
         setNotificationStatus({
           sms: notificationResult.sms,
           email: notificationResult.email,
           loading: false,
         })
-
-        saveNotificationHistory(appointment.id, "confirmation", notificationResult)
-      } catch (error) {
-        console.error("Error sending notifications:", error)
-        setNotificationStatus({
-          sms: { success: false, message: "Error al enviar SMS" },
-          email: { success: false, message: "Error al enviar email" },
-          loading: false,
-        })
+      } catch (notificationError) {
+        setNotificationStatus({ sms: null, email: null, loading: false })
       }
-
-      setStep(6)
+      setStep(6) // Avanzar a paso de confirmación
     } catch (error) {
-      console.error("Error in handleBookingConfirm:", error)
-      setNotificationStatus({
-        sms: { success: false, message: "Error al procesar la reserva" },
-        email: { success: false, message: "Error al procesar la reserva" },
-        loading: false,
-      })
+      alert('Error al guardar la cita: ' + (error as any)?.message || JSON.stringify(error))
+      setNotificationStatus({ sms: null, email: null, loading: false })
     }
   }
 

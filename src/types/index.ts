@@ -21,19 +21,17 @@ export interface Service {
 }
 
 export interface Appointment {
-  id: string
-  clientId: string
-  serviceIds: string[]
-  date: string
-  time: string
-  status: "confirmed" | "pending" | "cancelled" | "completed"
-  totalPrice: number
-  notes?: string
-  createdAt: string
-  statusHistory?: StatusChange[]
-  discountApplied?: number
-  couponUsed?: string
-  staffId?: string // Added staff selection
+  id: string;
+  tenant_id: string;
+  client_id: string;
+  staff_id: string;
+  service_ids: string[];
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  status: string;
+  total_price: number;
+  notes?: string;
+  created_at: string; // ISO timestamp
 }
 
 export interface StatusChange {

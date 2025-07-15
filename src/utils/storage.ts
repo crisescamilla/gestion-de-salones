@@ -3,6 +3,8 @@ import { emitEvent, AppEvents } from "./eventManager"
 import type { Appointment, Client } from "../types"
 import { getCurrentTenant } from "./tenantManager"
 import { syncToSupabase, SyncDataType } from "./crossBrowserSync"
+import { supabase } from "./supabaseClient";
+import { v4 as uuidv4 } from "uuid";
 
 // Get tenant-specific storage key
 const getTenantStorageKey = (key: string): string => {
@@ -140,47 +142,69 @@ export const getClients = (): Client[] => {
   }
 }
 
-export const saveClient = (client: Client): void => {
+async function saveClientToSupabase(client: Client, tenantId: string): Promise<boolean> {
   try {
-    const tenant = getCurrentTenant()
-    const clients = getClients()
-    const existingIndex = clients.findIndex((c) => c.id === client.id)
-
-    if (existingIndex >= 0) {
-      // Actualizar cliente existente
-      clients[existingIndex] = client
-      localStorage.setItem(getTenantStorageKey("clients"), JSON.stringify(clients))
-
-      // ✅ Emitir evento de actualización
-      emitEvent(AppEvents.CLIENT_UPDATED, {
-        client,
-        timestamp: new Date().toISOString(),
-        tenantId: tenant?.id
-      })
-
-      console.log("📝 Client updated for tenant:", tenant?.name, client.id)
-    } else {
-      // Crear nuevo cliente
-      clients.push(client)
-      localStorage.setItem(getTenantStorageKey("clients"), JSON.stringify(clients))
-
-      // ✅ Emitir evento de creación
-      emitEvent(AppEvents.CLIENT_CREATED, {
-        client,
-        timestamp: new Date().toISOString(),
-        tenantId: tenant?.id
-      })
-
-      console.log("✅ New client created for tenant:", tenant?.name, client.id)
+    const clientToSave = {
+      id: client.id || uuidv4(),
+      tenant_id: tenantId,
+      full_name: client.fullName,
+      email: client.email,
+      phone: client.phone,
+      total_spent: client.totalSpent || 0,
+      rewards_earned: client.rewardsEarned || 0,
+      created_at: client.createdAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    const { error } = await supabase
+      .from("clients")
+      .upsert([clientToSave], { onConflict: "id" });
+    if (error) {
+      console.error("❌ Error saving client to Supabase:", error);
+      console.error("Client data that failed:", clientToSave);
+      return false;
     }
-    
-    // Sincronizar con Supabase para compartir entre navegadores
-    syncToSupabase(SyncDataType.CLIENTS);
+    return true;
   } catch (error) {
-    console.error("Error saving client:", error)
-    throw error
+    console.error("❌ Exception saving client to Supabase:", error);
+    return false;
   }
 }
+
+export const saveClient = async (client: Client): Promise<boolean> => {
+  try {
+    const tenant = getCurrentTenant();
+    if (!tenant) {
+      console.warn("⚠️ No tenant selected for saving client");
+      return false;
+    }
+    // Guardar primero en Supabase
+    const supabaseOk = await saveClientToSupabase(client, tenant.id);
+    if (!supabaseOk) {
+      return false;
+    }
+    // Si Supabase fue exitoso, guardar en localStorage
+    const clients = getClients();
+    const existingIndex = clients.findIndex((c) => c.id === client.id);
+    if (existingIndex >= 0) {
+      clients[existingIndex] = client;
+    } else {
+      clients.push(client);
+    }
+    localStorage.setItem(getTenantStorageKey("clients"), JSON.stringify(clients));
+    // Emitir evento
+    emitEvent(AppEvents.CLIENT_UPDATED, {
+      client,
+      timestamp: new Date().toISOString(),
+      tenantId: tenant.id,
+    });
+    // Sincronizar con Supabase para compartir entre navegadores
+    syncToSupabase(SyncDataType.CLIENTS);
+    return true;
+  } catch (error) {
+    console.error("Error saving client:", error);
+    return false;
+  }
+};
 
 export const deleteClient = (clientId: string): void => {
   try {

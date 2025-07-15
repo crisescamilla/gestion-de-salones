@@ -22,8 +22,9 @@ import { serviceCategories } from '../data/services';
 import { useTheme } from '../hooks/useTheme';
 import { useStaffData } from '../hooks/useStaffData';
 import { saveStaffMember, deleteStaffMember, repairTenantStaffData } from '../utils/staffDataManager';
-import { handleStaffDeletion, handleStaffUpdate } from '../utils/staffIntegrity';
+import { handleStaffDeletion } from '../utils/staffIntegrity';
 import { getCurrentTenant } from '../utils/tenantManager';
+import { v4 as uuidv4 } from 'uuid';
 
 const StaffManager: React.FC = () => {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
@@ -56,39 +57,44 @@ const StaffManager: React.FC = () => {
 
   const handleSaveStaff = async (staffData: StaffMember) => {
     setLoading(true);
+    setMessage(null);
     try {
-      const existingStaff = staffMembers.find(s => s.id === staffData.id);
-      
-      if (existingStaff) {
-        // Handle staff update with integrity checks
-        const result = handleStaffUpdate(existingStaff, staffData);
-        
-        if (result.success) {
-          // Save the updated staff member
-          saveStaffMember(staffData, currentTenant?.id);
-          setMessage({ type: 'success', text: result.message });
-        } else {
-          setMessage({ type: 'error', text: result.message });
-        }
-      } else {
-        // Create new staff member
-        const newStaff: StaffMember = {
-          ...staffData,
-          id: Date.now().toString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        
-        saveStaffMember(newStaff, currentTenant?.id);
-        setMessage({ type: 'success', text: 'Empleado creado exitosamente' });
+      // Validar que specialties no esté vacío
+      if (!staffData.specialties || staffData.specialties.length === 0) {
+        setMessage({ type: 'error', text: 'Debes seleccionar al menos una especialidad.' });
+        setLoading(false);
+        return;
       }
-      
+      // Validar que schedule sea un objeto
+      if (!staffData.schedule || typeof staffData.schedule !== 'object') {
+        setMessage({ type: 'error', text: 'El horario es inválido.' });
+        setLoading(false);
+        return;
+      }
+      // Usar UUID para el id si es nuevo
+      const isNew = !staffData.id || staffData.id.length < 20;
+      const newStaff: StaffMember = {
+        ...staffData,
+        id: isNew ? uuidv4() : staffData.id,
+        createdAt: isNew ? new Date().toISOString() : staffData.createdAt,
+        updatedAt: new Date().toISOString(),
+        // Mapear imagen al campo correcto si es necesario
+        image: staffData.image || '',
+      };
+      // Guardar primero en Supabase
+      const supabaseResult = await saveStaffMember(newStaff, currentTenant?.id);
+      if (supabaseResult === false) {
+        setMessage({ type: 'error', text: 'Error al guardar en Supabase. Verifica tu conexión o los datos.' });
+        setLoading(false);
+        return;
+      }
+      setMessage({ type: 'success', text: isNew ? 'Empleado creado exitosamente' : 'Empleado actualizado exitosamente' });
       refreshData();
       setEditingStaff(null);
       setShowAddForm(false);
     } catch (error) {
       console.error('Error saving staff:', error);
-      setMessage({ type: 'error', text: 'Error al guardar empleado' });
+      setMessage({ type: 'error', text: 'Error al guardar empleado. Revisa los datos e inténtalo de nuevo.' });
     } finally {
       setLoading(false);
     }

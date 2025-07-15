@@ -1,6 +1,7 @@
 import { supabase } from "./supabaseClient"
 import type { StaffMember } from "../types"
 
+
 // Mapear StaffMember al formato de Supabase
 function mapStaffToSupabase(staff: StaffMember, tenantId: string) {
   return {
@@ -11,7 +12,7 @@ function mapStaffToSupabase(staff: StaffMember, tenantId: string) {
     specialties: staff.specialties,
     bio: staff.bio || "",
     experience: staff.experience || "",
-    image: staff.image || "",
+    image_url: staff.image || "", // <-- CORRECTO
     is_active: staff.isActive !== false,
     schedule: staff.schedule || {},
     rating: staff.rating || 5.0,
@@ -153,7 +154,7 @@ export async function verifyStaffTable(): Promise<boolean> {
   try {
     console.log("🔍 Verifying staff table structure...")
 
-    const { data, error } = await supabase.from("staff").select("*").limit(1)
+    const { error } = await supabase.from("staff").select("*").limit(1)
 
     if (error) {
       console.error("❌ Staff table verification failed:", error)

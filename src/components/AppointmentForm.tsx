@@ -4,7 +4,9 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { X } from "lucide-react"
 import { useTheme } from "../hooks/useTheme"
-import { getClients, saveClient, saveAppointment, getAppointments } from "../utils/storage"
+import { getClients, saveAppointment, getAppointments } from "../utils/storage"
+import { saveClientToSupabase } from "../utils/clientsSupabase";
+import { getClientsFromSupabase } from "../utils/clientsSupabase";
 import { getActiveServices } from "../utils/servicesManager"
 import type { Appointment, Client, Service } from "../types"
 import { useStaffForServices } from "../hooks/useStaffData"
@@ -23,6 +25,8 @@ import { debugSpecificAppointment } from "../utils/appointmentDebugger"
 import { validatePhoneServerSide } from "../utils/phoneValidation"
 import PhoneInput from "./PhoneInput"
 import { emitEvent, AppEvents } from "../utils/eventManager"
+import { createAppointment, updateAppointment } from '../utils/appointmentsSupabase';
+import { getCurrentTenant } from '../utils/tenantManager';
 
 interface AppointmentFormProps {
   onClose: () => void
@@ -38,9 +42,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
   const [phoneValidation, setPhoneValidation] = useState({ isValid: true, error: "" })
 
   const [formData, setFormData] = useState({
-    clientId: "",
-    staffId: "",
-    serviceIds: [] as string[],
+    client_id: "",
+    staff_id: "",
+    service_ids: [] as string[],
     date: getTodayString(),
     time: "",
     notes: "",
@@ -57,22 +61,24 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
 
   useEffect(() => {
     const loadData = async () => {
-      const clientsData = await getClients()
-      setClients(clientsData)
-
-      const servicesData = await getActiveServices()
-      setServices(servicesData)
-    }
-
-    loadData()
-  }, [])
+      const currentTenant = getCurrentTenant();
+      let clientsData: Client[] = [];
+      if (currentTenant?.id) {
+        clientsData = await getClientsFromSupabase(currentTenant.id);
+      }
+      setClients(clientsData);
+      const servicesData = await getActiveServices();
+      setServices(servicesData);
+    };
+    loadData();
+  }, []);
 
   useEffect(() => {
     if (editingAppointment) {
       setFormData({
-        clientId: editingAppointment.clientId,
-        staffId: editingAppointment.staffId || "",
-        serviceIds: editingAppointment.serviceIds,
+        client_id: editingAppointment.client_id,
+        staff_id: editingAppointment.staff_id || "",
+        service_ids: editingAppointment.service_ids,
         date: editingAppointment.date,
         time: editingAppointment.time,
         notes: editingAppointment.notes || "",
@@ -81,7 +87,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
     }
   }, [editingAppointment])
 
-  const selectedServices = services.filter((s) => formData.serviceIds.includes(s.id))
+  const selectedServices = services.filter((s) => formData.service_ids.includes(s.id))
   const requiredSpecialties = [...new Set(selectedServices.map((service) => service.category))]
   const { availableStaff } = useStaffForServices(requiredSpecialties)
 
@@ -90,8 +96,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
     console.log("🕐 Updating available time slots...")
     console.log("Current form data:", {
       date: formData.date,
-      staffId: formData.staffId,
-      serviceIds: formData.serviceIds,
+      staff_id: formData.staff_id,
+      service_ids: formData.service_ids,
     })
 
     // Validar que tenemos los datos necesarios
@@ -101,7 +107,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
       return
     }
 
-    if (formData.serviceIds.length === 0) {
+    if (formData.service_ids.length === 0) {
       console.log("❌ No services selected")
       setAvailableTimeSlots([])
       return
@@ -109,7 +115,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
 
     try {
       // Calcular duración total de los servicios
-      const selectedServices = services.filter((s) => formData.serviceIds.includes(s.id))
+      const selectedServices = services.filter((s) => formData.service_ids.includes(s.id))
       const totalDuration = selectedServices.reduce((total, service) => total + service.duration, 0)
 
       console.log(
@@ -137,8 +143,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
       console.log("🕐 After filtering past times:", timeSlots.length)
 
       // Si hay un staff específico seleccionado, filtrar por sus citas
-      if (formData.staffId) {
-        timeSlots = filterBookedTimeSlots(formData.date, timeSlots, allAppointments, formData.staffId)
+      if (formData.staff_id) {
+        timeSlots = filterBookedTimeSlots(formData.date, timeSlots, allAppointments, formData.staff_id)
         console.log("👤 After filtering staff bookings:", timeSlots.length)
       } else {
         // Si no hay staff específico, mostrar horarios que al menos un staff puede cubrir
@@ -146,7 +152,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
           (apt) =>
             apt.date === formData.date &&
             apt.status !== "cancelled" &&
-            availableStaff.some((staff) => staff.id === apt.staffId),
+            availableStaff.some((staff) => staff.id === apt.staff_id),
         )
 
         // Filtrar horarios que están completamente ocupados por todo el staff disponible
@@ -175,150 +181,76 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
   useEffect(() => {
     console.log("🔄 Dependencies changed, updating time slots...")
     updateAvailableTimeSlots()
-  }, [formData.date, formData.staffId, formData.serviceIds, services, availableStaff, editingAppointment?.id])
+  }, [formData.date, formData.staff_id, formData.service_ids, services, availableStaff, editingAppointment?.id])
 
   const handlePhoneValidation = (isValid: boolean, error?: string) => {
     setPhoneValidation({ isValid, error: error || "" })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
+    e.preventDefault();
+    setLoading(true);
     try {
-      console.log("💾 === SAVING APPOINTMENT ===")
-      console.log("Form data before processing:", formData)
-
-      if (!isValidDateString(formData.date)) {
-        console.error("❌ Invalid date format:", formData.date)
-        alert("Formato de fecha inválido")
-        return
+      const currentTenant = getCurrentTenant();
+      if (!currentTenant?.id) {
+        alert('No se encontró el tenant actual.');
+        setLoading(false);
+        return;
       }
-
-      let clientId = formData.clientId
-      let newClientCreated = null
-
-      // Create new client if necessary
-      if (!clientId && newClient.fullName) {
-        // Server-side phone validation
-        const phoneValidation = validatePhoneServerSide(newClient.phone)
-
-        if (!phoneValidation.isValid) {
-          alert(`Error en el teléfono: ${phoneValidation.error}`)
-          return
-        }
-
+      let clientId = formData.client_id;
+      // Si no hay client_id pero hay datos de nuevo cliente, crearlo primero
+      if (!clientId && newClient.fullName && phoneValidation.isValid) {
         const client: Client = {
-          id: Date.now().toString(),
+          id: '', // Será reemplazado por Supabase
           fullName: newClient.fullName,
           email: newClient.email,
-          phone: phoneValidation.sanitized || newClient.phone,
+          phone: newClient.phone,
           createdAt: new Date().toISOString(),
+        };
+        // Guardar cliente en Supabase
+        const ok = await saveClientToSupabase(client, currentTenant.id);
+        if (!ok) {
+          alert('Error al guardar el cliente en Supabase. Intenta de nuevo.');
+          setLoading(false);
+          return;
         }
-
-        saveClient(client)
-        clientId = client.id
-        newClientCreated = client
-        console.log("✅ New client created with validated phone:", client)
-
-        // ✅ Emit client creation event
-        console.log("📡 Emitting CLIENT_CREATED event...")
-        emitEvent(AppEvents.CLIENT_CREATED, {
-          client,
-          source: "appointment_form",
-          timestamp: new Date().toISOString(),
-        })
+        // Recuperar el id generado
+        const updatedClients = await getClientsFromSupabase(currentTenant.id);
+        setClients(updatedClients);
+        const savedClient = updatedClients.find(c => c.email === client.email && c.phone === client.phone);
+        if (!savedClient) {
+          alert('No se pudo recuperar el cliente guardado. Intenta de nuevo.');
+          setLoading(false);
+          return;
+        }
+        clientId = savedClient.id;
       }
-
-      const selectedServices = services.filter((s) => formData.serviceIds.includes(s.id))
-      const totalPrice = selectedServices.reduce((total, service) => total + service.price, 0)
-
-      // Auto-assign staff if none selected
-      let finalStaffId = formData.staffId
-
-      if (!finalStaffId && availableStaff.length > 0) {
-        const appointments = getAppointments()
-        const staffWorkload = availableStaff.map((staff) => ({
-          ...staff,
-          appointmentCount: appointments.filter(
-            (apt) => apt.staffId === staff.id && apt.date === formData.date && apt.status !== "cancelled",
-          ).length,
-        }))
-
-        staffWorkload.sort((a, b) => a.appointmentCount - b.appointmentCount)
-        finalStaffId = staffWorkload[0].id
-
-        console.log(
-          `🤖 Auto-assigned staff: ${staffWorkload[0].name} (ID: ${finalStaffId}, ${staffWorkload[0].appointmentCount} appointments)`,
-        )
+      if (!clientId || !formData.staff_id || !currentTenant?.id) {
+        alert("Debes seleccionar un cliente, un especialista y un negocio antes de guardar la cita.");
+        setLoading(false);
+        return;
       }
-
-      if (!finalStaffId) {
-        console.error("❌ No staff ID assigned")
-        alert("Error: No se pudo asignar un especialista")
-        return
-      }
-
-      const appointmentId = editingAppointment?.id || Date.now().toString()
-
-      const appointment: Appointment = {
-        id: appointmentId,
-        clientId,
-        staffId: finalStaffId,
-        serviceIds: formData.serviceIds,
+      const appointmentData = {
+        tenant_id: currentTenant.id,
+        client_id: clientId,
+        staff_id: formData.staff_id,
+        service_ids: formData.service_ids,
         date: formData.date,
         time: formData.time,
         status: formData.status,
+        total_price: 0, // Puedes calcular el precio total según los servicios seleccionados
         notes: formData.notes,
-        totalPrice,
-        createdAt: editingAppointment?.createdAt || new Date().toISOString(),
-      }
-
-      console.log("💾 Final appointment object:", appointment)
-
-      saveAppointment(appointment)
-
-      // Get additional data for event
-      const client = newClientCreated || clients.find((c) => c.id === clientId)
-      const staff = availableStaff.find((s) => s.id === finalStaffId)
-
-      // ✅ Emit appointment event with proper enum
+      };
       if (editingAppointment) {
-        console.log("📡 Emitting APPOINTMENT_UPDATED event...")
-        emitEvent(AppEvents.APPOINTMENT_UPDATED, {
-          appointment,
-          previousAppointment: editingAppointment,
-          client,
-          staff,
-          services: selectedServices,
-          isStatusUpdate: false,
-          changedBy: "Usuario",
-          source: "appointment_form",
-          timestamp: new Date().toISOString(),
-        })
+        await updateAppointment(editingAppointment.id, appointmentData);
       } else {
-        console.log("📡 Emitting APPOINTMENT_CREATED event...")
-        emitEvent(AppEvents.APPOINTMENT_CREATED, {
-          appointment,
-          client,
-          staff,
-          services: selectedServices,
-          source: "appointment_form",
-          timestamp: new Date().toISOString(),
-        })
+        await createAppointment(appointmentData);
       }
-
-      setTimeout(() => {
-        console.log("🔍 Verifying saved appointment...")
-        debugSpecificAppointment(appointmentId)
-      }, 100)
-
-      onSave()
-    } catch (error) {
-      console.error("Error saving appointment:", error)
-      alert("Error al guardar la cita")
-    } finally {
-      setLoading(false)
+      setLoading(false);
+      onSave(); // Esto recarga la lista en el panel administrativo
+    } catch (error: any) {
+      setLoading(false);
+      alert('Error al guardar la cita: ' + (error?.message || JSON.stringify(error)));
     }
   }
 
@@ -330,6 +262,11 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
     background: colors?.background || "#f8fafc",
     border: colors?.border || "#e5e7eb",
     primary: colors?.primary || "#0ea5e9",
+  }
+
+  // Función simple para validar UUID v4
+  function isValidUUID(id: string) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
   }
 
   return (
@@ -359,24 +296,24 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                 Cliente
               </label>
               <select
-                value={formData.clientId}
-                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                value={formData.client_id}
+                onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
                 className="w-full px-3 py-2 rounded-lg border"
                 style={{
-                  backgroundColor: safeColors.background,
                   borderColor: safeColors.border,
+                  backgroundColor: safeColors.surface,
                   color: safeColors.text,
                 }}
               >
                 <option value="">Seleccionar cliente existente</option>
-                {clients.map((client) => (
+                {clients.filter(client => isValidUUID(client.id)).map((client) => (
                   <option key={client.id} value={client.id}>
-                    {client.fullName} - {client.phone}
+                    {client.fullName}
                   </option>
                 ))}
               </select>
 
-              {!formData.clientId && (
+              {!formData.client_id && (
                 <div className="mt-4 p-4 border rounded-lg" style={{ borderColor: safeColors.border }}>
                   <h4 className="font-medium mb-3" style={{ color: safeColors.text }}>
                     O crear nuevo cliente
@@ -433,18 +370,18 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                   <label key={service.id} className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={formData.serviceIds.includes(service.id)}
+                      checked={formData.service_ids.includes(service.id)}
                       onChange={(e) => {
                         if (e.target.checked) {
                           setFormData({
                             ...formData,
-                            serviceIds: [...formData.serviceIds, service.id],
+                            service_ids: [...formData.service_ids, service.id],
                             time: "", // Reset time when services change
                           })
                         } else {
                           setFormData({
                             ...formData,
-                            serviceIds: formData.serviceIds.filter((id) => id !== service.id),
+                            service_ids: formData.service_ids.filter((id) => id !== service.id),
                             time: "", // Reset time when services change
                           })
                         }
@@ -466,7 +403,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                 Seleccionar Especialista
               </h3>
 
-              {formData.serviceIds.length === 0 ? (
+              {formData.service_ids.length === 0 ? (
                 <div
                   className="p-6 rounded-lg border-2 border-dashed text-center theme-transition"
                   style={{
@@ -493,11 +430,11 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div
-                    onClick={() => setFormData((prev) => ({ ...prev, staffId: "", time: "" }))}
+                    onClick={() => setFormData((prev) => ({ ...prev, staff_id: "", time: "" }))}
                     className="p-4 rounded-lg border-2 cursor-pointer transition-all theme-transition"
                     style={{
-                      borderColor: !formData.staffId ? safeColors.primary : safeColors.border,
-                      backgroundColor: !formData.staffId ? `${safeColors.primary}0d` : safeColors.surface,
+                      borderColor: !formData.staff_id ? safeColors.primary : safeColors.border,
+                      backgroundColor: !formData.staff_id ? `${safeColors.primary}0d` : safeColors.surface,
                     }}
                   >
                     <h4 className="font-medium theme-transition" style={{ color: safeColors.text }}>
@@ -509,7 +446,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                   </div>
 
                   {availableStaff.map((staff) => {
-                    const selectedServices = services.filter((s) => formData.serviceIds.includes(s.id))
+                    const selectedServices = services.filter((s) => formData.service_ids.includes(s.id))
                     const canPerformAll = selectedServices.every((service) =>
                       staff.specialties.includes(service.category),
                     )
@@ -520,15 +457,15 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                         onClick={() => {
                           setFormData((prev) => ({
                             ...prev,
-                            staffId: staff.id,
+                            staff_id: staff.id,
                             time: "", // Reset time when staff changes
                           }))
                         }}
                         className="p-4 rounded-lg border-2 cursor-pointer transition-all theme-transition"
                         style={{
-                          borderColor: formData.staffId === staff.id ? safeColors.primary : safeColors.border,
+                          borderColor: formData.staff_id === staff.id ? safeColors.primary : safeColors.border,
                           backgroundColor:
-                            formData.staffId === staff.id ? `${safeColors.primary}0d` : safeColors.surface,
+                            formData.staff_id === staff.id ? `${safeColors.primary}0d` : safeColors.surface,
                         }}
                       >
                         <div className="flex items-center mb-2">
@@ -598,10 +535,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                     color: safeColors.text,
                   }}
                   required
-                  disabled={formData.serviceIds.length === 0}
+                  disabled={formData.service_ids.length === 0}
                 >
                   <option value="">
-                    {formData.serviceIds.length === 0
+                    {formData.service_ids.length === 0
                       ? "Primero selecciona servicios"
                       : availableTimeSlots.length === 0
                         ? "No hay horarios disponibles"
@@ -615,7 +552,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                 </select>
 
                 {/* Debug info */}
-                {formData.serviceIds.length > 0 && (
+                {formData.service_ids.length > 0 && (
                   <p className="text-xs mt-1" style={{ color: safeColors.textSecondary }}>
                     {availableTimeSlots.length} horarios disponibles
                   </p>
@@ -663,8 +600,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                 style={{ backgroundColor: safeColors.primary }}
                 disabled={
                   loading ||
-                  (!formData.clientId && (!newClient.fullName || !phoneValidation.isValid)) ||
-                  formData.serviceIds.length === 0 ||
+                  (!formData.client_id && (!newClient.fullName || !phoneValidation.isValid)) ||
+                  formData.service_ids.length === 0 ||
                   !formData.date ||
                   !formData.time
                 }

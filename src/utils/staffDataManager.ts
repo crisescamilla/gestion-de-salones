@@ -288,7 +288,7 @@ export const isStaffAvailableOnDay = (staffId: string, dayOfWeek: string, forceR
 }
 
 // ✅ Función para guardar datos de personal
-export const saveStaffMember = async (staffMember: StaffMember, tenantId?: string): Promise<void> => {
+export const saveStaffMember = async (staffMember: StaffMember, tenantId?: string): Promise<boolean> => {
   // Obtener el tenant actual si no se proporciona uno
   if (!tenantId) {
     const currentTenant = getCurrentTenant()
@@ -298,10 +298,16 @@ export const saveStaffMember = async (staffMember: StaffMember, tenantId?: strin
   // Si no hay tenant, no guardar
   if (!tenantId) {
     console.warn("⚠️ No tenant ID available for saving staff data")
-    return
+    return false
   }
 
   try {
+    // Guardar en Supabase primero
+    const supabaseOk = await saveStaffToSupabase(staffMember, tenantId);
+    if (!supabaseOk) {
+      return false;
+    }
+    // Si Supabase fue exitoso, guardar en localStorage
     const storageKey = getStaffStorageKey(tenantId)
     const allStaff = getStaffData(true, tenantId)
     const existingIndex = allStaff.findIndex((s) => s.id === staffMember.id)
@@ -322,26 +328,22 @@ export const saveStaffMember = async (staffMember: StaffMember, tenantId?: strin
     }
 
     localStorage.setItem(storageKey, JSON.stringify(allStaff))
-    
-    // Guardar en Supabase
-    await saveStaffToSupabase(staffMember, tenantId);
 
     // Invalidar caché para este tenant
     invalidateStaffCache(tenantId)
-    
     // Emitir evento
     emitEvent(AppEvents.STAFF_UPDATED, {
       staffId: staffMember.id,
       tenantId,
       timestamp: new Date().toISOString()
     })
-    
     // Sincronizar con Supabase para compartir entre navegadores
     syncToSupabase(SyncDataType.STAFF);
-    
     console.log(`✅ Staff member saved for tenant ${tenantId}:`, staffMember.id)
+    return true;
   } catch (error) {
     console.error(`❌ Error saving staff member for tenant ${tenantId}:`, error)
+    return false;
   }
 }
 

@@ -20,9 +20,12 @@ import {
   Minus,
 } from "lucide-react"
 import { useTheme } from "../hooks/useTheme"
-import { getClients, getAppointments } from "../utils/storage"
+import { getAppointments as getAppointmentsSupabase } from '../utils/appointmentsSupabase';
+import { getClientsFromSupabase } from '../utils/clientsSupabase';
+import { getCurrentTenant } from '../utils/tenantManager';
 // ✅ Importar el sistema de eventos real
 import { subscribeToEvent, unsubscribeFromEvent, AppEvents } from "../utils/eventManager"
+import type { Appointment, Client } from '../types';
 
 interface ActivityItem {
   id: string
@@ -146,34 +149,25 @@ const createActivityFromEvent = (eventType: AppEvents, eventData: any): Activity
   }
 }
 
-// Calculate weekly summary from actual data
-const calculateWeeklySummary = (): WeeklySummary => {
-  const now = new Date()
-  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)
-
-  const appointments = getAppointments()
-  const clients = getClients()
+// Calcular resumen semanal desde Supabase
+const calculateWeeklySummary = async (appointments: Appointment[], clients: Client[]) => {
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
   // Current week data
-  const currentWeekAppointments = appointments.filter(
-    (apt) => new Date(apt.createdAt) >= weekAgo && apt.status !== "cancelled",
-  )
+  const currentWeekAppointments = appointments.filter((apt: Appointment) => new Date(apt.created_at) >= weekAgo && apt.status !== "cancelled");
   const currentWeekRevenue = currentWeekAppointments
-    .filter((apt) => apt.status === "completed")
-    .reduce((sum, apt) => sum + apt.totalPrice, 0)
-  const currentWeekClients = clients.filter((client) => new Date(client.createdAt) >= weekAgo)
+    .filter((apt: Appointment) => apt.status === "completed")
+    .reduce((sum: number, apt: Appointment) => sum + (apt.total_price || 0), 0);
+  const currentWeekClients = clients.filter((client: Client) => new Date(client.createdAt) >= weekAgo);
 
   // Previous week data for comparison
-  const previousWeekAppointments = appointments.filter(
-    (apt) => new Date(apt.createdAt) >= twoWeeksAgo && new Date(apt.createdAt) < weekAgo && apt.status !== "cancelled",
-  )
+  const previousWeekAppointments = appointments.filter((apt: Appointment) => new Date(apt.created_at) >= twoWeeksAgo && new Date(apt.created_at) < weekAgo && apt.status !== "cancelled");
   const previousWeekRevenue = previousWeekAppointments
-    .filter((apt) => apt.status === "completed")
-    .reduce((sum, apt) => sum + apt.totalPrice, 0)
-  const previousWeekClients = clients.filter(
-    (client) => new Date(client.createdAt) >= twoWeeksAgo && new Date(client.createdAt) < weekAgo,
-  )
+    .filter((apt: Appointment) => apt.status === "completed")
+    .reduce((sum: number, apt: Appointment) => sum + (apt.total_price || 0), 0);
+  const previousWeekClients = clients.filter((client: Client) => new Date(client.createdAt) >= twoWeeksAgo && new Date(client.createdAt) < weekAgo);
 
   // Calculate growth percentages
   const appointmentGrowth =
@@ -181,35 +175,38 @@ const calculateWeeklySummary = (): WeeklySummary => {
       ? ((currentWeekAppointments.length - previousWeekAppointments.length) / previousWeekAppointments.length) * 100
       : currentWeekAppointments.length > 0
         ? 100
-        : 0
+        : 0;
 
   const revenueGrowth =
     previousWeekRevenue > 0
       ? ((currentWeekRevenue - previousWeekRevenue) / previousWeekRevenue) * 100
       : currentWeekRevenue > 0
         ? 100
-        : 0
+        : 0;
 
   const clientGrowth =
     previousWeekClients.length > 0
       ? ((currentWeekClients.length - previousWeekClients.length) / previousWeekClients.length) * 100
       : currentWeekClients.length > 0
         ? 100
-        : 0
+        : 0;
 
   return {
     totalAppointments: currentWeekAppointments.length,
     totalRevenue: currentWeekRevenue,
     newClients: currentWeekClients.length,
-    completedServices: currentWeekAppointments.filter((apt) => apt.status === "completed").length,
-    averageServiceValue: currentWeekAppointments.length > 0 ? currentWeekRevenue / currentWeekAppointments.length : 0,
+    completedServices: currentWeekAppointments.filter((apt: Appointment) => apt.status === "completed").length,
+    averageServiceValue:
+      currentWeekAppointments.length > 0
+        ? currentWeekRevenue / currentWeekAppointments.length
+        : 0,
     growthMetrics: {
       appointments: appointmentGrowth,
       revenue: revenueGrowth,
       clients: clientGrowth,
     },
-  }
-}
+  };
+};
 
 const Dashboard: React.FC = () => {
   const [activities, setActivities] = useState<ActivityItem[]>([])
@@ -300,9 +297,19 @@ const Dashboard: React.FC = () => {
     try {
       console.log("📊 Dashboard: Cargando datos iniciales...")
 
+      const currentTenant = getCurrentTenant();
+      if (!currentTenant?.id) {
+        console.error("Tenant ID not found. Cannot load initial data.");
+        setIsLoading(false);
+        return;
+      }
+
       // Cargar datos reales del sistema
-      setWeeklySummary(calculateWeeklySummary())
-      setLastUpdate(new Date())
+      const appointments = await getAppointmentsSupabase(currentTenant.id);
+      const clients = await getClientsFromSupabase(currentTenant.id);
+      const summary = await calculateWeeklySummary(appointments, clients);
+      setWeeklySummary(summary);
+      setLastUpdate(new Date());
 
       // Inicializar con actividades vacías - se llenarán con eventos reales
       setActivities([])
@@ -321,7 +328,16 @@ const Dashboard: React.FC = () => {
     try {
       console.log("📊 Dashboard: Actualizando datos...")
       await new Promise((resolve) => setTimeout(resolve, 500))
-      setWeeklySummary(calculateWeeklySummary())
+      const currentTenant = getCurrentTenant();
+      if (!currentTenant?.id) {
+        console.error("Tenant ID not found. Cannot refresh data.");
+        setIsRefreshing(false);
+        return;
+      }
+      const appointments = await getAppointmentsSupabase(currentTenant.id);
+      const clients = await getClientsFromSupabase(currentTenant.id);
+      const summary = await calculateWeeklySummary(appointments, clients);
+      setWeeklySummary(summary);
       setNewActivityCount(0)
       setLastUpdate(new Date())
 
@@ -338,8 +354,7 @@ const Dashboard: React.FC = () => {
   // ✅ MODIFICADO: Auto-refresh solo para métricas, no para simulaciones
   useEffect(() => {
     const autoRefreshInterval = setInterval(() => {
-      setWeeklySummary(calculateWeeklySummary())
-      setLastUpdate(new Date())
+      loadInitialData(); // This will now fetch data from Supabase
     }, 60000) // Cada minuto
 
     return () => clearInterval(autoRefreshInterval)
@@ -347,7 +362,16 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     loadInitialData()
-    // ✅ ELIMINADO: initializeWebSocket() - Ya no necesitamos simulaciones
+    // Suscribirse a eventos de citas para recargar en tiempo real
+    const reload = () => loadInitialData();
+    subscribeToEvent(AppEvents.APPOINTMENT_CREATED, reload);
+    subscribeToEvent(AppEvents.APPOINTMENT_UPDATED, reload);
+    subscribeToEvent(AppEvents.APPOINTMENT_DELETED, reload);
+    return () => {
+      unsubscribeFromEvent(AppEvents.APPOINTMENT_CREATED, reload);
+      unsubscribeFromEvent(AppEvents.APPOINTMENT_UPDATED, reload);
+      unsubscribeFromEvent(AppEvents.APPOINTMENT_DELETED, reload);
+    };
   }, [])
 
   const getActivityIcon = (type: ActivityItem["type"]) => {

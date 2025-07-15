@@ -32,6 +32,10 @@ import { getTodayString } from "../utils/dateUtils"
 import { isSameDate, formatDateSpanish } from "../utils/dateHelpers"
 // ✅ IMPORTAR: Funciones de debugging
 import { debugAppointments, repairStaffAssignments } from "../utils/appointmentDebugger"
+import { getClientsFromSupabase } from "../utils/clientsSupabase";
+import { getCurrentTenant } from "../utils/tenantManager";
+import { getAppointments as getAppointmentsSupabase, deleteAppointment as deleteAppointmentSupabase, updateAppointment } from '../utils/appointmentsSupabase';
+import { updateClientInSupabase } from '../utils/clientsSupabase';
 
 const AppointmentManager: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([])
@@ -50,6 +54,8 @@ const AppointmentManager: React.FC = () => {
   // ✅ AGREGAR: Estado para debugging
   const [showDebugInfo, setShowDebugInfo] = useState(false)
   const [debugResults, setDebugResults] = useState<any[]>([])
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [clientEditForm, setClientEditForm] = useState({ phone: '', email: '' });
 
   const { colors } = useTheme()
   const notificationTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map())
@@ -75,10 +81,6 @@ const AppointmentManager: React.FC = () => {
       console.log("🔄 Cita actualizada:", eventData)
       loadData()
       setLastUpdate(new Date())
-
-      if (eventData.isStatusUpdate) {
-        showNotification("Estado de cita actualizado", "info")
-      }
     }
 
     const handleAppointmentDeleted = (eventData: any) => {
@@ -132,37 +134,34 @@ const AppointmentManager: React.FC = () => {
   }, [])
 
   const loadData = async () => {
-    console.log("📊 Cargando datos de citas...");
+    console.log("📊 Cargando datos de citas desde Supabase...");
     try {
-      const appointmentsData = getAppointments();
-      const clientsData = getClients();
+      const currentTenant = getCurrentTenant();
+      let appointmentsData: Appointment[] = [];
+      if (currentTenant?.id) {
+        appointmentsData = await getAppointmentsSupabase(currentTenant.id);
+      } else {
+        appointmentsData = [];
+      }
+      let clientsData = [];
+      if (currentTenant?.id) {
+        clientsData = await getClientsFromSupabase(currentTenant.id);
+      } else {
+        clientsData = getClients(); // fallback
+      }
       const servicesData = await getActiveServices();
       const staffData = getStaffData();
-
-      console.log("📊 Datos cargados:", {
-        appointments: appointmentsData.length,
-        clients: clientsData.length,
-        services: servicesData.length,
-        staff: staffData.length,
-      })
-
-      console.log(
-        "👥 Staff IDs disponibles:",
-        staffData.map((s) => ({ id: s.id, name: s.name })),
-      )
-
-      appointmentsData.forEach((apt) => {
-        console.log("📝 Appointment staff assignment:", {
-          appointmentId: apt.id,
-          staffId: apt.staffId,
-          staffFound: staffData.find((s) => s.id === apt.staffId)?.name || "NOT FOUND",
-        })
-      })
-
       setAppointments(appointmentsData)
       setClients(clientsData)
       setServices(servicesData)
       setStaffMembers(staffData)
+      appointmentsData.forEach((apt: Appointment) => {
+        console.log("📝 Appointment staff assignment:", {
+          appointmentId: apt.id,
+          staffId: apt.staff_id,
+          staffFound: staffData.find((s) => s.id === apt.staff_id)?.name || "NOT FOUND",
+        })
+      })
     } catch (error) {
       console.error("Error loading data:", error)
       showNotification("Error al cargar datos", "error")
@@ -215,10 +214,10 @@ const AppointmentManager: React.FC = () => {
     }
   }
 
-  const filteredAppointments = appointments.filter((appointment) => {
-    const client = clients.find((c) => c.id === appointment.clientId)
-    const appointmentServices = services.filter((s) => appointment.serviceIds.includes(s.id))
-    const staff = staffMembers.find((s) => s.id === appointment.staffId)
+  const filteredAppointments = appointments.filter((appointment: Appointment) => {
+    const client = clients.find((c) => c.id === appointment.client_id)
+    const appointmentServices = services.filter((s) => appointment.service_ids.includes(s.id))
+    const staff = staffMembers.find((s) => s.id === appointment.staff_id)
 
     const matchesSearch =
       client?.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -260,42 +259,34 @@ const AppointmentManager: React.FC = () => {
     }
   }
 
-  const handleStatusChange = (appointmentId: string, newStatus: Appointment["status"]) => {
+  const handleStatusChange = async (appointmentId: string, newStatus: Appointment["status"]) => {
     try {
-      const appointment = appointments.find((apt) => apt.id === appointmentId)
+      const appointment = appointments.find((apt) => apt.id === appointmentId);
       if (appointment) {
-        const updatedAppointment = { ...appointment, status: newStatus }
-        saveAppointment(updatedAppointment)
-        // Emitir evento de actualización
+        await updateAppointment(appointmentId, { status: newStatus });
         emitEvent(AppEvents.APPOINTMENT_UPDATED, {
-          appointment: updatedAppointment,
+          appointment: { ...appointment, status: newStatus },
           oldStatus: appointment.status,
           newStatus: newStatus,
           isStatusUpdate: true,
           changedBy: "Administrador",
-        })
-        showNotification("Estado actualizado", "success")
+        });
+        showNotification("Estado actualizado", "success");
+        loadData();
       }
     } catch (error) {
-      console.error("Error updating appointment status:", error)
-      showNotification("Error al actualizar estado", "error")
+      console.error("Error updating appointment status:", error);
+      showNotification("Error al actualizar estado", "error");
     }
   }
 
-  const handleDeleteAppointment = (appointmentId: string) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar esta cita?")) {
-      try {
-        deleteAppointment(appointmentId)
-        // Emitir evento de eliminación
-        emitEvent(AppEvents.APPOINTMENT_DELETED, {
-          appointmentId: appointmentId,
-          deletedBy: "Administrador",
-        })
-        showNotification("Cita eliminada", "success")
-      } catch (error) {
-        console.error("Error deleting appointment:", error)
-        showNotification("Error al eliminar cita", "error")
-      }
+  const handleDeleteAppointment = async (appointmentId: string) => {
+    try {
+      await deleteAppointmentSupabase(appointmentId);
+      showNotification("Cita eliminada", "warning");
+      loadData();
+    } catch (error) {
+      showNotification("Error al eliminar cita", "error");
     }
   }
 
@@ -310,7 +301,9 @@ const AppointmentManager: React.FC = () => {
   }
 
   const handleFormSave = () => {
-    handleFormClose()
+    setShowAddForm(false);
+    setEditingAppointment(null);
+    loadData();
   }
 
   const handleManualRefresh = () => {
@@ -482,7 +475,7 @@ const AppointmentManager: React.FC = () => {
             </div>
             <div>
               <strong>Citas sin especialista:</strong>{" "}
-              {debugResults.filter((r) => !r.staff && r.appointment.staffId).length}
+              {debugResults.filter((r) => !r.staff && r.appointment.staff_id).length}
             </div>
 
             {debugResults.filter((r) => r.issues.length > 0).length > 0 && (
@@ -608,14 +601,14 @@ const AppointmentManager: React.FC = () => {
             </div>
           </div>
         ) : (
-          filteredAppointments.map((appointment) => {
-            const client = clients.find((c) => c.id === appointment.clientId)
-            const appointmentServices = services.filter((s) => appointment.serviceIds.includes(s.id))
-            const staff = staffMembers.find((s) => s.id === appointment.staffId)
+          filteredAppointments.map((appointment: Appointment) => {
+            const client = clients.find((c) => c.id === appointment.client_id)
+            const appointmentServices = services.filter((s) => appointment.service_ids.includes(s.id))
+            const staff = staffMembers.find((s) => s.id === appointment.staff_id)
 
             console.log("🔍 Rendering appointment:", {
               appointmentId: appointment.id,
-              staffId: appointment.staffId,
+              staffId: appointment.staff_id,
               staffFound: staff,
               staffName: staff?.name,
               allStaffIds: staffMembers.map((s) => s.id),
@@ -642,6 +635,19 @@ const AppointmentManager: React.FC = () => {
                         <span className="font-medium theme-transition" style={{ color: colors?.text || "#1f2937" }}>
                           {client?.fullName || "Cliente no encontrado"}
                         </span>
+                        {client && (
+                          <button
+                            onClick={() => {
+                              setEditingClient(client);
+                              setClientEditForm({ phone: client.phone, email: client.email });
+                            }}
+                            className="ml-2 p-1 rounded transition-colors theme-transition"
+                            style={{ color: colors?.info || "#3b82f6", backgroundColor: `${colors?.info || "#3b82f6"}0d` }}
+                            title="Editar cliente"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                       {client && (
                         <>
@@ -692,11 +698,11 @@ const AppointmentManager: React.FC = () => {
                               </div>
                             </div>
                           </div>
-                        ) : appointment.staffId ? (
+                        ) : appointment.staff_id ? (
                           <div className="text-sm">
                             <span style={{ color: colors?.error || "#ef4444" }}>⚠ Especialista no encontrado</span>
                             <div className="text-xs" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                              ID: {appointment.staffId}
+                              ID: {appointment.staff_id}
                             </div>
                           </div>
                         ) : (
@@ -708,7 +714,7 @@ const AppointmentManager: React.FC = () => {
 
                       <div className="text-sm theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
                         {appointmentServices.reduce((total, s) => total + s.duration, 0)} min • $
-                        {appointment.totalPrice}
+                        {appointment.total_price}
                       </div>
                     </div>
 
@@ -799,6 +805,65 @@ const AppointmentManager: React.FC = () => {
       {/* Add/Edit Form Modal */}
       {showAddForm && (
         <AppointmentForm onClose={handleFormClose} onSave={handleFormSave} editingAppointment={editingAppointment} />
+      )}
+
+      {/* Modal de edición de cliente */}
+      {editingClient && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold mb-4">Editar Cliente</h3>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  await updateClientInSupabase(editingClient.id, clientEditForm);
+                  showNotification('Cliente actualizado', 'success');
+                  setEditingClient(null);
+                  loadData();
+                } catch (error) {
+                  showNotification('Error al actualizar cliente', 'error');
+                }
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-sm font-medium mb-1">Teléfono</label>
+                <input
+                  type="text"
+                  value={clientEditForm.phone}
+                  onChange={(e) => setClientEditForm({ ...clientEditForm, phone: e.target.value })}
+                  className="w-full px-3 py-2 rounded border"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Correo electrónico</label>
+                <input
+                  type="email"
+                  value={clientEditForm.email}
+                  onChange={(e) => setClientEditForm({ ...clientEditForm, email: e.target.value })}
+                  className="w-full px-3 py-2 rounded border"
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-2 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingClient(null)}
+                  className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   )
