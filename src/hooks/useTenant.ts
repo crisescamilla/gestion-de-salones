@@ -55,7 +55,10 @@ export const useTenantProvider = (): TenantContext => {
             console.log("Consultando Supabase por slug:", slug);
             currentTenant = await getTenantBySlugFromSupabase(slug);
             if (currentTenant) {
+              console.log("Tenant encontrado en Supabase:", currentTenant);
               await setCurrentTenant(currentTenant); // Guardar en localStorage y sessionStorage
+            } else {
+              console.log("No se encontró tenant en Supabase");
             }
           }
         }
