@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ThemeSettings } from '../types';
 import { getActiveTheme, subscribeThemeChanges } from '../utils/themeManager';
+import { getThemeSettingsFromSupabase, saveTheme } from "../utils/themeManager";
+import { getCurrentTenant } from "../utils/tenantManager";
 
 // Custom hook for real-time theme updates
 export const useTheme = () => {
@@ -8,12 +10,40 @@ export const useTheme = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Subscribe to theme changes
+    const fetchTheme = async () => {
+      setLoading(true);
+      const tenant = getCurrentTenant();
+      let localTheme = getActiveTheme();
+
+      // Si no hay tema en localStorage, consulta Supabase
+      if ((!localTheme || !localTheme.id || localTheme.id === "default") && tenant?.id) {
+        try {
+          const dbThemes = await getThemeSettingsFromSupabase(tenant.id);
+          if (dbThemes && dbThemes.length > 0) {
+            // Guarda todos los temas en localStorage
+            dbThemes.forEach((theme: any) => saveTheme(theme));
+            // Busca el activo
+            const active = dbThemes.find((t: any) => t.is_active) || dbThemes[0];
+            setActiveTheme(active);
+          } else {
+            setActiveTheme(localTheme);
+          }
+        } catch (e) {
+          setActiveTheme(localTheme);
+        }
+      } else {
+        setActiveTheme(localTheme);
+      }
+      setLoading(false);
+    };
+
+    fetchTheme();
+
+    // Suscripción a cambios locales
     const unsubscribe = subscribeThemeChanges((newTheme) => {
       setActiveTheme(newTheme);
     });
 
-    // Cleanup subscription on unmount
     return unsubscribe;
   }, []);
 

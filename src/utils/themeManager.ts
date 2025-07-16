@@ -525,6 +525,141 @@ export const themePresets: ThemePreset[] = [
       border: '#e5e7eb',            // Gris muy claro
       shadow: 'rgba(107, 114, 128, 0.1)'
     }
+  },
+  {
+    id: 'barber-classic',
+    name: 'Barbería Clásica',
+    description: 'Azules y grises sobrios inspirados en barberías tradicionales',
+    preview: 'linear-gradient(135deg, #22304a, #b0b7bd)',
+    colors: {
+      primary: '#22304a',           // Azul oscuro
+      primaryLight: '#3a4a6b',      // Azul medio
+      primaryDark: '#101a2b',       // Azul muy oscuro
+      secondary: '#b0b7bd',         // Gris claro
+      secondaryLight: '#e5e7eb',    // Gris muy claro
+      secondaryDark: '#6b7280',     // Gris medio
+      accent: '#d97706',            // Dorado oscuro
+      accentLight: '#fbbf24',       // Dorado claro
+      accentDark: '#b45309',        // Dorado profundo
+      success: '#059669',           // Verde oscuro
+      warning: '#f59e0b',           // Ámbar
+      error: '#ef4444',             // Rojo
+      info: '#2563eb',              // Azul info
+      background: '#f3f4f6',        // Gris muy claro
+      surface: '#ffffff',           // Blanco
+      text: '#1f2937',              // Gris muy oscuro
+      textSecondary: '#6b7280',     // Gris medio
+      border: '#e5e7eb',            // Gris claro
+      shadow: 'rgba(34, 48, 74, 0.12)'
+    }
+  },
+  {
+    id: 'urban-night',
+    name: 'Noche Urbana',
+    description: 'Negros y dorados para un look masculino y elegante',
+    preview: 'linear-gradient(135deg, #18181b, #f59e0b)',
+    colors: {
+      primary: '#18181b',           // Negro profundo
+      primaryLight: '#27272a',      // Gris oscuro
+      primaryDark: '#0a0a0a',       // Negro absoluto
+      secondary: '#f59e0b',         // Dorado
+      secondaryLight: '#fbbf24',    // Dorado claro
+      secondaryDark: '#b45309',     // Dorado oscuro
+      accent: '#2563eb',            // Azul vibrante
+      accentLight: '#60a5fa',       // Azul claro
+      accentDark: '#1e40af',        // Azul oscuro
+      success: '#059669',           // Verde oscuro
+      warning: '#f59e0b',           // Ámbar
+      error: '#ef4444',             // Rojo
+      info: '#3b82f6',              // Azul info
+      background: '#232323',        // Negro grisáceo
+      surface: '#18181b',           // Negro profundo
+      text: '#f3f4f6',              // Gris muy claro
+      textSecondary: '#a3a3a3',     // Gris medio
+      border: '#27272a',            // Gris oscuro
+      shadow: 'rgba(24, 24, 27, 0.18)'
+    }
+  },
+  {
+    id: 'steel-blue',
+    name: 'Acero Azul',
+    description: 'Azules acero y plateados para un estilo masculino moderno',
+    preview: 'linear-gradient(135deg, #1e293b, #64748b)',
+    colors: {
+      primary: '#1e293b',           // Azul acero oscuro
+      primaryLight: '#334155',      // Azul acero medio
+      primaryDark: '#0f172a',       // Azul acero profundo
+      secondary: '#64748b',         // Plateado azulado
+      secondaryLight: '#cbd5e1',    // Plateado claro
+      secondaryDark: '#475569',     // Plateado oscuro
+      accent: '#f59e0b',            // Dorado
+      accentLight: '#fbbf24',       // Dorado claro
+      accentDark: '#b45309',        // Dorado oscuro
+      success: '#059669',           // Verde oscuro
+      warning: '#f59e0b',           // Ámbar
+      error: '#ef4444',             // Rojo
+      info: '#3b82f6',              // Azul info
+      background: '#f1f5f9',        // Azul muy claro
+      surface: '#ffffff',           // Blanco
+      text: '#1e293b',              // Azul acero oscuro
+      textSecondary: '#64748b',     // Plateado azulado
+      border: '#cbd5e1',            // Plateado claro
+      shadow: 'rgba(30, 41, 59, 0.13)'
+    }
+  },
+  {
+    id: 'colorblind-protanopia',
+    name: 'Accesible Daltonismo (Protanopía/Deuteranopía)',
+    description: 'Colores de alto contraste y diferenciación para usuarios con protanopía o deuteranopía. Evita combinaciones rojo-verde y prioriza azul, amarillo y gris.',
+    preview: 'linear-gradient(135deg, #0072b2, #f0e442)',
+    colors: {
+      primary: '#0072b2',           // Azul fuerte
+      primaryLight: '#56b4e9',      // Azul claro
+      primaryDark: '#003366',       // Azul muy oscuro
+      secondary: '#f0e442',         // Amarillo
+      secondaryLight: '#fff799',    // Amarillo claro
+      secondaryDark: '#bdb800',     // Amarillo oscuro
+      accent: '#009e73',            // Verde azulado (seguro para daltonismo)
+      accentLight: '#a6d854',       // Verde claro
+      accentDark: '#006d5b',        // Verde oscuro
+      success: '#009e73',           // Verde azulado
+      warning: '#f0e442',           // Amarillo
+      error: '#000000',             // Negro (para alertas)
+      info: '#56b4e9',              // Azul claro
+      background: '#ffffff',        // Blanco
+      surface: '#f7f7f7',           // Gris muy claro
+      text: '#222222',              // Gris muy oscuro
+      textSecondary: '#666666',     // Gris medio
+      border: '#cccccc',            // Gris claro
+      shadow: 'rgba(0, 114, 178, 0.10)'
+    }
+  },
+  {
+    id: 'autism-friendly',
+    name: 'Amigable Autismo',
+    description: 'Colores suaves y calmantes, sin contrastes agresivos, para reducir la sobrecarga sensorial. Ideal para personas con autismo o sensibilidad sensorial.',
+    preview: 'linear-gradient(135deg, #a7c7e7, #b7e4c7)',
+    colors: {
+      primary: '#a7c7e7',           // Azul pastel suave
+      primaryLight: '#d0e6fa',      // Azul muy claro
+      primaryDark: '#6fa3c7',       // Azul pastel medio
+      secondary: '#b7e4c7',         // Verde menta suave
+      secondaryLight: '#e0f7ef',    // Verde menta muy claro
+      secondaryDark: '#7fc8a9',     // Verde menta medio
+      accent: '#f6e7cb',            // Beige suave
+      accentLight: '#fff8e1',       // Beige muy claro
+      accentDark: '#e2c799',        // Beige medio
+      success: '#8ecae6',           // Azul claro calmante
+      warning: '#ffe066',           // Amarillo pastel
+      error: '#bdbdbd',             // Gris (en vez de rojo)
+      info: '#b5ead7',              // Verde agua
+      background: '#f8fafc',        // Blanco azulado
+      surface: '#ffffff',           // Blanco
+      text: '#22223b',              // Azul grisáceo oscuro
+      textSecondary: '#6c757d',     // Gris medio
+      border: '#e0e1dd',            // Gris claro
+      shadow: 'rgba(167, 199, 231, 0.10)'
+    }
   }
 ];
 

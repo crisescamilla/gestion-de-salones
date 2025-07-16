@@ -48,48 +48,49 @@ export const useStaffData = (autoRefresh = true) => {
       // 2. Si está vacío, carga de Supabase
       if (!localStaff || localStaff.length === 0) {
         const remoteStaff = await getStaffFromSupabase(tenantId);
-        setStaff(remoteStaff);
 
-        // 3. Guarda cada staff en localStorage para futuras cargas rápidas
-        for (const s of remoteStaff) {
-          await saveStaffMember(s, tenantId);
+        if (remoteStaff && remoteStaff.length > 0) {
+          setStaff(remoteStaff);
+          // Guarda cada staff en localStorage para futuras cargas rápidas
+          for (const s of remoteStaff) {
+            await saveStaffMember(s, tenantId);
+          }
+        } else {
+          // 3. Si tampoco hay en Supabase, usa por defecto
+          setStaff([]);
         }
       } else {
         setStaff(localStaff);
       }
+      setLoading(false);
     };
 
+    setLoading(true);
     loadStaff();
 
     // Inicializar gestor de datos
-    initializeStaffDataManager()
-
-    // Cargar datos iniciales
-    console.log("🚀 useStaffData: Loading initial data for tenant:", tenantId)
-    const initialData = getStaffData(false, tenantId)
-    setStaff(initialData)
-    setLoading(false)
+    initializeStaffDataManager();
 
     if (autoRefresh) {
       // Suscribirse a eventos de cambios
       const handleStaffChange = () => {
-        console.log("📡 useStaffData: Staff change detected, refreshing...")
-        refreshData()
-      }
+        console.log("📡 useStaffData: Staff change detected, refreshing...");
+        refreshData();
+      };
 
-      subscribeToEvent(AppEvents.STAFF_UPDATED, handleStaffChange)
-      subscribeToEvent(AppEvents.STAFF_DELETED, handleStaffChange)
-      subscribeToEvent(AppEvents.STAFF_ACTIVATED, handleStaffChange)
-      subscribeToEvent(AppEvents.STAFF_DEACTIVATED, handleStaffChange)
+      subscribeToEvent(AppEvents.STAFF_UPDATED, handleStaffChange);
+      subscribeToEvent(AppEvents.STAFF_DELETED, handleStaffChange);
+      subscribeToEvent(AppEvents.STAFF_ACTIVATED, handleStaffChange);
+      subscribeToEvent(AppEvents.STAFF_DEACTIVATED, handleStaffChange);
 
       return () => {
-        unsubscribeFromEvent(AppEvents.STAFF_UPDATED, handleStaffChange)
-        unsubscribeFromEvent(AppEvents.STAFF_DELETED, handleStaffChange)
-        unsubscribeFromEvent(AppEvents.STAFF_ACTIVATED, handleStaffChange)
-        unsubscribeFromEvent(AppEvents.STAFF_DEACTIVATED, handleStaffChange)
-      }
+        unsubscribeFromEvent(AppEvents.STAFF_UPDATED, handleStaffChange);
+        unsubscribeFromEvent(AppEvents.STAFF_DELETED, handleStaffChange);
+        unsubscribeFromEvent(AppEvents.STAFF_ACTIVATED, handleStaffChange);
+        unsubscribeFromEvent(AppEvents.STAFF_DEACTIVATED, handleStaffChange);
+      };
     }
-  }, [autoRefresh, refreshData, tenantId])
+  }, [autoRefresh, refreshData, tenantId]);
 
   return {
     staff,

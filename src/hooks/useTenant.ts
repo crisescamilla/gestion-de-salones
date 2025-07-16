@@ -38,40 +38,38 @@ export const useTenantProvider = (): TenantContext => {
         setIsLoading(true);
         setError(null);
 
-        // Try to get tenant from URL first
+        // 1. Intenta obtener el tenant desde la URL (localStorage)
         let currentTenant = getTenantFromURL();
-        
-        // If no tenant in URL, try to get from storage
+
+        // 2. Si no está en la URL, intenta obtenerlo del almacenamiento local
         if (!currentTenant) {
           currentTenant = getCurrentTenant();
         }
 
-        // Si no se encuentra localmente, buscar en Supabase por slug
+        // 3. Si no está localmente, consulta Supabase por el slug de la URL
         if (!currentTenant) {
           const path = window.location.pathname;
           const segments = path.split("/").filter(Boolean);
           if (segments.length > 0) {
             const slug = segments[0];
+            console.log("Consultando Supabase por slug:", slug);
             currentTenant = await getTenantBySlugFromSupabase(slug);
             if (currentTenant) {
-              setCurrentTenant(currentTenant); // Guardar en localStorage para futuras visitas
+              await setCurrentTenant(currentTenant); // Guardar en localStorage y sessionStorage
             }
           }
         }
 
-        
-
         if (currentTenant) {
           setTenant(currentTenant);
 
-          // Load tenant owner
+          // Cargar el owner si es necesario
           const tenantOwner = getTenantOwnerById(currentTenant.ownerId);
           setOwner(tenantOwner);
 
           // Sincronizar datos entre navegadores
           syncTenantData();
         } else {
-          // No tenant found, redirect to tenant selection or registration
           setError('No tenant found');
         }
       } catch (err) {

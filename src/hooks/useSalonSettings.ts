@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react"
 import type { SalonSettings } from "../types"
 import { getSalonSettings, subscribeSalonSettingsChanges } from "../utils/salonSettings"
-import { getCurrentTenant } from "../utils/tenantManager"
+import { getSalonSettingsFromSupabase, saveSalonSettings } from "../utils/salonSettings";
+import { getCurrentTenant } from "../utils/tenantManager";
 
 // Custom hook for real-time salon settings
 export const useSalonSettings = () => {
@@ -11,15 +12,45 @@ export const useSalonSettings = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    // Subscribe to settings changes
-    const unsubscribe = subscribeSalonSettingsChanges((newSettings) => {
-      console.log("🔄 useSalonSettings: Settings updated", newSettings)
-      setSettings(newSettings)
-    })
+    const fetchSettings = async () => {
+      setLoading(true);
+      const tenant = getCurrentTenant();
+      let localSettings = getSalonSettings();
 
-    // Cleanup subscription on unmount
-    return unsubscribe
-  }, [])
+      // Si no hay settings en localStorage, consulta Supabase
+      if (
+        (!localSettings || !localSettings.salonName || localSettings.salonName === "El nombre de tu salón") &&
+        tenant?.id
+      ) {
+        try {
+          const dbSettings = await getSalonSettingsFromSupabase(tenant.id);
+          if (dbSettings) {
+            saveSalonSettings(dbSettings, "sync_system");
+            setSettings({
+              ...localSettings,
+              ...dbSettings,
+            });
+          } else {
+            setSettings(localSettings);
+          }
+        } catch (e) {
+          setSettings(localSettings);
+        }
+      } else {
+        setSettings(localSettings);
+      }
+      setLoading(false);
+    };
+
+    fetchSettings();
+
+    // Suscripción a cambios locales
+    const unsubscribe = subscribeSalonSettingsChanges((newSettings) => {
+      setSettings(newSettings);
+    });
+
+    return unsubscribe;
+  }, []);
 
   const refreshSettings = () => {
     setLoading(true)
