@@ -11,8 +11,18 @@ export async function getTenants(): Promise<Tenant[]> {
 
 // Obtener tenant por slug
 export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
-  const { data, error } = await supabase.from('tenants').select('*').eq('slug', slug).eq('is_active', true).single();
-  if (error) return null;
+  console.log("Consultando Supabase por slug:", slug);
+  const { data, error } = await supabase
+    .from('tenants')
+    .select('*')
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .single();
+  if (error) {
+    console.error("Error consultando Supabase:", error);
+    return null;
+  }
+  console.log("Resultado de Supabase:", data);
   return data as Tenant;
 }
 
