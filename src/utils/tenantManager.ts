@@ -141,6 +141,139 @@ export const businessTypeConfigs: BusinessTypeConfig[] = [
     defaultColors: { primary: "#10b981", secondary: "#3b82f6" },
     features: ["Servicios integrales", "Profesionales certificados", "Enfoque holístico"],
   },
+  {
+    id: "estetica",
+    name: "Clínica Estética",
+    description: "Tratamientos médicos estéticos, botox, rellenos, etc.",
+    defaultServices: [
+      { name: "Aplicación de Botox", category: "tratamientos-faciales", duration: 30, price: 1200 },
+      { name: "Rellenos Faciales", category: "tratamientos-faciales", duration: 45, price: 2000 },
+      { name: "Peeling Químico", category: "tratamientos-faciales", duration: 60, price: 1500 },
+    ],
+    defaultColors: { primary: "#fbbf24", secondary: "#6366f1" },
+    features: ["Tratamientos médicos", "Profesionales certificados", "Resultados visibles"],
+  },
+  {
+    id: "depilacion",
+    name: "Centro de Depilación",
+    description: "Especialistas en depilación láser, cera, etc.",
+    defaultServices: [
+      { name: "Depilación Láser", category: "tratamientos-corporales", duration: 30, price: 500 },
+      { name: "Depilación con Cera", category: "tratamientos-corporales", duration: 20, price: 200 },
+    ],
+    defaultColors: { primary: "#f472b6", secondary: "#fbbf24" },
+    features: ["Tecnología avanzada", "Resultados duraderos", "Atención personalizada"],
+  },
+  {
+    id: "masajes",
+    name: "Centro de Masajes",
+    description: "Masajes terapéuticos y relajantes.",
+    defaultServices: [
+      { name: "Masaje Relajante", category: "masajes", duration: 60, price: 700 },
+      { name: "Masaje Descontracturante", category: "masajes", duration: 45, price: 500 },
+    ],
+    defaultColors: { primary: "#10b981", secondary: "#f59e0b" },
+    features: ["Masajes especializados", "Ambiente relajante", "Terapias manuales"],
+  },
+  {
+    id: "infantil",
+    name: "Peluquería Infantil",
+    description: "Cortes y servicios para niños.",
+    defaultServices: [
+      { name: "Corte Infantil", category: "servicios-cabello", duration: 25, price: 180 },
+      { name: "Peinado Infantil", category: "servicios-cabello", duration: 20, price: 120 },
+    ],
+    defaultColors: { primary: "#fbbf24", secondary: "#60a5fa" },
+    features: ["Ambiente amigable", "Especialistas en niños", "Juegos y entretenimiento"],
+  },
+  {
+    id: "podologia",
+    name: "Centro de Podología",
+    description: "Cuidado y salud de los pies.",
+    defaultServices: [
+      { name: "Consulta Podológica", category: "tratamientos-corporales", duration: 30, price: 300 },
+      { name: "Tratamiento de Uñas Encarnadas", category: "servicios-unas", duration: 40, price: 350 },
+    ],
+    defaultColors: { primary: "#60a5fa", secondary: "#fbbf24" },
+    features: ["Especialistas certificados", "Tratamientos avanzados", "Prevención y cuidado"],
+  },
+  {
+    id: "tatuajes",
+    name: "Estudio de Tatuajes y Piercings",
+    description: "Tatuajes, piercings y cuidado posterior.",
+    defaultServices: [
+      { name: "Tatuaje Pequeño", category: "productos", duration: 60, price: 1000 },
+      { name: "Piercing", category: "productos", duration: 30, price: 400 },
+    ],
+    defaultColors: { primary: "#1f2937", secondary: "#f59e0b" },
+    features: ["Artistas profesionales", "Higiene y seguridad", "Diseños personalizados"],
+  },
+  {
+    id: "rehabilitacion",
+    name: "Clínica de Rehabilitación Física",
+    description: "Fisioterapia, rehabilitación y terapias físicas.",
+    defaultServices: [
+      { name: "Sesión de Fisioterapia", category: "tratamientos-corporales", duration: 50, price: 500 },
+      { name: "Terapia de Rehabilitación", category: "tratamientos-corporales", duration: 60, price: 600 },
+    ],
+    defaultColors: { primary: "#3b82f6", secondary: "#10b981" },
+    features: ["Profesionales certificados", "Equipos modernos", "Recuperación efectiva"],
+  },
+  {
+    id: "yoga",
+    name: "Centro de Yoga y Pilates",
+    description: "Clases y terapias de yoga, pilates y meditación.",
+    defaultServices: [
+      { name: "Clase de Yoga", category: "spa-relajacion", duration: 60, price: 200 },
+      { name: "Clase de Pilates", category: "spa-relajacion", duration: 60, price: 220 },
+    ],
+    defaultColors: { primary: "#a78bfa", secondary: "#fbbf24" },
+    features: ["Instructores certificados", "Ambiente relajante", "Clases grupales y privadas"],
+  },
+  {
+    id: "bronceado",
+    name: "Centro de Bronceado",
+    description: "Bronceado artificial, camas solares, spray tan.",
+    defaultServices: [
+      { name: "Bronceado en Spray", category: "productos", duration: 30, price: 350 },
+      { name: "Cama Solar", category: "productos", duration: 20, price: 250 },
+    ],
+    defaultColors: { primary: "#f59e0b", secondary: "#fbbf24" },
+    features: ["Tecnología avanzada", "Resultados naturales", "Atención personalizada"],
+  },
+  {
+    id: "maquillaje",
+    name: "Centro de Maquillaje Profesional",
+    description: "Estudio de maquillaje social y artístico.",
+    defaultServices: [
+      { name: "Maquillaje Social", category: "productos", duration: 45, price: 500 },
+      { name: "Maquillaje Artístico", category: "productos", duration: 60, price: 700 },
+    ],
+    defaultColors: { primary: "#ec4899", secondary: "#6366f1" },
+    features: ["Maquillistas profesionales", "Técnicas avanzadas", "Eventos y sesiones"],
+  },
+  {
+    id: "cejas-pestanas",
+    name: "Centro de Cejas y Pestañas",
+    description: "Diseño de cejas, extensiones de pestañas, lifting, etc.",
+    defaultServices: [
+      { name: "Diseño de Cejas", category: "tratamientos-faciales", duration: 30, price: 200 },
+      { name: "Extensión de Pestañas", category: "tratamientos-faciales", duration: 60, price: 400 },
+    ],
+    defaultColors: { primary: "#fbbf24", secondary: "#ec4899" },
+    features: ["Especialistas en cejas", "Productos premium", "Técnicas avanzadas"],
+  },
+  {
+    id: "nutricion",
+    name: "Clínica de Nutrición",
+    description: "Consultorios de nutrición, dietas, control de peso.",
+    defaultServices: [
+      { name: "Consulta Nutricional", category: "tratamientos-corporales", duration: 45, price: 300 },
+      { name: "Plan de Alimentación", category: "tratamientos-corporales", duration: 30, price: 250 },
+    ],
+    defaultColors: { primary: "#10b981", secondary: "#fbbf24" },
+    features: ["Nutriólogos certificados", "Planes personalizados", "Control de peso"],
+  },
 ]
 
 // Negocios de demostración para Netlify
