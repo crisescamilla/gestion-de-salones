@@ -572,7 +572,7 @@ const initializeDemoData = async () => {
     
     for (const tenant of DEMO_TENANTS) {
       await createTenantInSupabase(tenant);
-      initializeTenantData(tenant.id, tenant.businessType);
+      await initializeTenantData(tenant.id, tenant.businessType);
     }
     
     console.log("Datos de demostración inicializados correctamente");
@@ -756,7 +756,7 @@ export const createTenant = async (
 }
 
 // Initialize tenant-specific data
-export const initializeTenantData = (tenantId: string, businessType: string): void => {
+export const  initializeTenantData = async (tenantId: string, businessType: string): Promise<void> => {
   // Validate tenant UUID
   if (!isValidUUID(tenantId)) {
     console.error(`Cannot initialize data for tenant with invalid UUID: ${tenantId}`);
@@ -768,6 +768,42 @@ export const initializeTenantData = (tenantId: string, businessType: string): vo
 
   const tenantDataKey = `${STORAGE_KEYS.TENANT_DATA_PREFIX}${tenantId}`
 
+  const tenantData = await supabase
+    .from('tenants')
+    .select()
+    .eq('id', tenantId)
+    .maybeSingle();
+    const sessionTenant: Tenant[] = [
+      {
+        id: uuidv4(),
+        name: tenantData.data.name,
+        slug: tenantData.data.slug,
+        businessType: "salon",
+        primaryColor: "#ec4899",
+        secondaryColor: "#3b82f6",
+        address: "Av. Revolución 1234, Zona Centro, Tijuana, BC 22000, México",
+        phone: "664-563-6423",
+        email: "info@bellavitaspa.com",
+        website: "https://bellavitaspa.com",
+        description: "Tu destino de belleza y relajación en Tijuana",
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        ownerId: uuidv4(),
+        subscription: {
+          plan: "premium",
+          status: "active",
+          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+        settings: {
+          allowOnlineBooking: true,
+          requireApproval: false,
+          timeZone: "America/Tijuana",
+          currency: "MXN",
+          language: "es",
+        },
+      },
+    ];
   // Initialize with default services for business type
   const initialData = {
     services: config.defaultServices.map((service, index) => ({
@@ -804,6 +840,7 @@ export const initializeTenantData = (tenantId: string, businessType: string): vo
   }
 
   localStorage.setItem(tenantDataKey, JSON.stringify(initialData))
+  localStorage.setItem(STORAGE_KEYS.TENANTS, JSON.stringify(sessionTenant));
 }
 
 // Get tenant-specific data
