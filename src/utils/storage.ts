@@ -5,6 +5,7 @@ import { getCurrentTenant } from "./tenantManager"
 import { syncToSupabase, SyncDataType } from "./crossBrowserSync"
 import { supabase } from "./supabaseClient";
 import { v4 as uuidv4 } from "uuid";
+import { getClientsFromSupabase } from "./clientsSupabase";
 
 // Get tenant-specific storage key
 const getTenantStorageKey = (key: string): string => {
@@ -35,8 +36,8 @@ export const saveAppointment = (appointment: Appointment): void => {
       id: appointment.id,
       date: appointment.date,
       time: appointment.time,
-      clientId: appointment.clientId,
-      staffId: appointment.staffId,
+      clientId: appointment.client_id,
+      staffId: appointment.staff_id,
     })
 
     const appointments = getAppointments()
@@ -128,17 +129,46 @@ export const getAppointments = (): Appointment[] => {
   }
 }
 
-export const getClients = (): Client[] => {
+export const getClients = async (): Promise<Client[]> => {
   try {
-    const tenant = getCurrentTenant()
-    const stored = localStorage.getItem(getTenantStorageKey("clients"))
-    const clients = stored ? JSON.parse(stored) : []
+    const tenant = getCurrentTenant();
+    const storageKey = getTenantStorageKey("clients");
+    const stored = localStorage.getItem(storageKey);
+    let clients = stored ? JSON.parse(stored) : [];
     
-    console.log(`👥 Loading clients for tenant: ${tenant?.name || 'default'} - Count: ${clients.length}`)
-    return clients
+    if (clients && clients.length > 0) {
+      console.log(`👥 Loading clients for tenant: ${tenant?.name || 'default'} - Count: ${clients.length}`)
+      return clients;
+    }
+
+    // Si no hay clientes en localStorage, consultar Supabase
+    if (tenant?.id) {
+      const remoteClients = await getClientsFromSupabase(tenant.id);
+      if (remoteClients && remoteClients.length > 0) {
+        localStorage.setItem(storageKey, JSON.stringify(remoteClients));
+        console.log(`👥 Loaded clients from Supabase for tenant: ${tenant?.name || 'default'} - Count: ${remoteClients.length}`)
+        return remoteClients;
+      }
+    }
+
+    return [];
   } catch (error) {
     console.error("Error loading clients:", error)
-    return []
+    return [];
+  }
+}
+
+// Versión síncrona solo para lectura local (para compatibilidad en funciones no async)
+export const getClientsSync = (): Client[] => {
+  try {
+    const tenant = getCurrentTenant();
+    const storageKey = getTenantStorageKey("clients");
+    const stored = localStorage.getItem(storageKey);
+    let clients = stored ? JSON.parse(stored) : [];
+    return clients;
+  } catch (error) {
+    console.error("Error loading clients (sync):", error)
+    return [];
   }
 }
 
@@ -183,7 +213,7 @@ export const saveClient = async (client: Client): Promise<boolean> => {
       return false;
     }
     // Si Supabase fue exitoso, guardar en localStorage
-    const clients = getClients();
+    const clients = await getClients(); // Await the async call
     const existingIndex = clients.findIndex((c) => c.id === client.id);
     if (existingIndex >= 0) {
       clients[existingIndex] = client;
@@ -209,7 +239,7 @@ export const saveClient = async (client: Client): Promise<boolean> => {
 export const deleteClient = (clientId: string): void => {
   try {
     const tenant = getCurrentTenant()
-    const clients = getClients()
+    const clients = getClientsSync(); // Await the async call
     const clientToDelete = clients.find((c) => c.id === clientId)
 
     if (clientToDelete) {
@@ -240,7 +270,7 @@ export const getAvailableTimeSlots = (date: string, staffId: string, serviceDura
   try {
     const appointments = getAppointments() // Ya usa el tenant correcto
     const staffAppointments = appointments.filter(
-      (apt) => apt.date === date && apt.staffId === staffId && apt.status !== "cancelled",
+      (apt) => apt.date === date && apt.staff_id === staffId && apt.status !== "cancelled",
     )
 
     // Horarios disponibles (ejemplo: 9:00 AM a 6:00 PM)
@@ -292,7 +322,7 @@ export const getAppointmentById = (appointmentId: string): Appointment | null =>
 
 export const getClientById = (clientId: string): Client | null => {
   try {
-    const clients = getClients()
+    const clients = getClientsSync(); // Await the async call
     return clients.find((client) => client.id === clientId) || null
   } catch (error) {
     console.error("Error getting client by ID:", error)
@@ -313,7 +343,7 @@ export const getAppointmentsByDate = (date: string): Appointment[] => {
 export const getAppointmentsByStaff = (staffId: string): Appointment[] => {
   try {
     const appointments = getAppointments()
-    return appointments.filter((apt) => apt.staffId === staffId)
+    return appointments.filter((apt) => apt.staff_id === staffId)
   } catch (error) {
     console.error("Error getting appointments by staff:", error)
     return []
@@ -323,7 +353,7 @@ export const getAppointmentsByStaff = (staffId: string): Appointment[] => {
 export const getAppointmentsByClient = (clientId: string): Appointment[] => {
   try {
     const appointments = getAppointments()
-    return appointments.filter((apt) => apt.clientId === clientId)
+    return appointments.filter((apt) => apt.client_id === clientId)
   } catch (error) {
     console.error("Error getting appointments by client:", error)
     return []
@@ -352,7 +382,7 @@ export const isTimeSlotAvailable = (
     const appointments = getAppointments()
     const staffAppointments = appointments.filter(
       (apt) =>
-        apt.date === date && apt.staffId === staffId && apt.status !== "cancelled" && apt.id !== excludeAppointmentId,
+        apt.date === date && apt.staff_id === staffId && apt.status !== "cancelled" && apt.id !== excludeAppointmentId,
     )
 
     const newStart = new Date(`${date}T${time}`)
@@ -435,7 +465,7 @@ export const debugTenantData = (): void => {
   console.log("Tenant ID:", tenant?.id || "No ID")
   
   const appointments = getAppointments()
-  const clients = getClients()
+  const clients = getClientsSync(); // Await the async call
   
   console.log("Data for this tenant:", {
     appointments: appointments.length,

@@ -140,7 +140,24 @@ export const getServices = async (tenantId?: string): Promise<Service[]> => {
     console.warn('⚠️ No tenant ID available for services data');
     return [];
   }
-  return await getServicesFromSupabase(tenantId);
+
+  // Intentar cargar desde localStorage primero
+  const storageKey = getTenantStorageKey("services", tenantId);
+  const stored = localStorage.getItem(storageKey);
+  let localServices: Service[] = stored ? JSON.parse(stored) : [];
+
+  if (localServices && localServices.length > 0) {
+    return localServices;
+  }
+
+  // Si no hay datos locales, consultar Supabase
+  const remoteServices = await getServicesFromSupabase(tenantId);
+  if (remoteServices && remoteServices.length > 0) {
+    localStorage.setItem(storageKey, JSON.stringify(remoteServices));
+    return remoteServices;
+  }
+
+  return [];
 };
 
 // Obtener solo los servicios activos desde Supabase

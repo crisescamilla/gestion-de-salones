@@ -90,30 +90,43 @@ export const useTenantProvider = (): TenantContext => {
 
   // Listen for URL changes
   useEffect(() => {
-    const handlePopState = () => {
-      const urlTenant = getTenantFromURL();
-      if (urlTenant && urlTenant.id !== tenant?.id) {
-        setTenant(urlTenant);
-        setCurrentTenant(urlTenant);
-        
-        const tenantOwner = getTenantOwnerById(urlTenant.ownerId);
-        setOwner(tenantOwner);
+    // Nueva función para buscar tenant por slug, primero local, luego Supabase
+    const fetchTenantBySlug = async (slug: string) => {
+      let foundTenant = getTenantBySlug(slug);
+      if (!foundTenant) {
+        foundTenant = await getTenantBySlugFromSupabase(slug);
+        if (foundTenant) {
+          await setCurrentTenant(foundTenant);
+        }
+      }
+      return foundTenant;
+    };
+
+    const handlePopState = async () => {
+      const path = window.location.pathname;
+      const segments = path.split("/").filter(Boolean);
+      if (segments.length > 0) {
+        const slug = segments[0];
+        const urlTenant = await fetchTenantBySlug(slug);
+        if (urlTenant && urlTenant.id !== tenant?.id) {
+          setTenant(urlTenant);
+          setCurrentTenant(urlTenant);
+          const tenantOwner = getTenantOwnerById(urlTenant.ownerId);
+          setOwner(tenantOwner);
+        }
       }
     };
     
     // También verificar periódicamente
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       const path = window.location.pathname;
       const segments = path.split("/").filter(Boolean);
-      
       if (segments.length > 0) {
-        const potentialSlug = segments[0];
-        const urlTenant = getTenantBySlug(potentialSlug);
-        
+        const slug = segments[0];
+        const urlTenant = await fetchTenantBySlug(slug);
         if (urlTenant && urlTenant.id !== tenant?.id) {
           setTenant(urlTenant);
           setCurrentTenant(urlTenant);
-          
           const tenantOwner = getTenantOwnerById(urlTenant.ownerId);
           setOwner(tenantOwner);
         }
