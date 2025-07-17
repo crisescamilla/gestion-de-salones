@@ -188,7 +188,7 @@ const TenantRegistration: React.FC = () => {
       });
       
 
-      // Update owner with tenant ID (fix: add tenants property if missing)
+      // Update owner with tenant ID (add tenants property if missing)
       (owner as any).tenants = [createdTenant.id];
       await saveTenantOwner(owner);
 

@@ -63,8 +63,11 @@ export const useTenantProvider = (): TenantContext => {
           }
         }
 
+        
+
         if (currentTenant) {
           setTenant(currentTenant);
+          setCurrentTenant(currentTenant);
 
           // Cargar el owner si es necesario
           const tenantOwner = getTenantOwnerById(currentTenant.ownerId);

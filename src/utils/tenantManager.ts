@@ -593,6 +593,7 @@ export const isSlugAvailable = (slug: string, excludeTenantId?: string): boolean
 // Get all tenants
 export const getTenants = (): Tenant[] => {
   cleanInvalidTenantData();
+  
   // No inicializar datos demo en local, solo en Netlify (ya está controlado en initializeDemoData)
   // initializeDemoData(); // <-- NO LLAMAR AQUÍ
   const stored = localStorage.getItem(STORAGE_KEYS.TENANTS)
@@ -611,6 +612,7 @@ export const getTenantBySlug = (slug: string): Tenant | null => {
   // initializeDemoData(); // <-- NO LLAMAR AQUÍ
   const tenants = getTenants()
   const tenant = tenants.find((t) => t.slug === slug && t.isActive) || null
+
   // Validate UUID before returning
   if (tenant && (!isValidUUID(tenant.id) || !isValidUUID(tenant.ownerId))) {
     console.warn(`Tenant ${tenant.name} has invalid UUID, removing from storage`);
@@ -1073,7 +1075,7 @@ export const migrateToMultiTenant = async (): Promise<void> => {
       slug: 'bella-vita-spa',
       businessType: 'salon',
       primaryColor: '#ec4899',
-      secondaryColor: '#3b82f6',
+      secondaryColor: '#8b5cf6',
       address: 'Av. Principal 1234, Tijuana, BC',
       phone: '664-123-4567',
       email: 'info@bellavitaspa.com',
@@ -1095,7 +1097,7 @@ export const migrateToMultiTenant = async (): Promise<void> => {
         language: 'es',
       }
     };
-    
+
     // Create default owner
     const defaultOwner: TenantOwner = {
       id: defaultTenant.ownerId,
@@ -1107,8 +1109,9 @@ export const migrateToMultiTenant = async (): Promise<void> => {
       password_hash: 'hashed-password', // This would be properly hashed
       created_at: new Date().toISOString()
     };
-    await saveTenantOwner(defaultOwner);
 
+    await saveTenant(defaultTenant);
+    await saveTenantOwner(defaultOwner);
     // Create admin user for default tenant
     createTenantAdmin(defaultTenant.id, {
       firstName: 'Admin',

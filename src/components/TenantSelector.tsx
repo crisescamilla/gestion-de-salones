@@ -31,7 +31,7 @@ const TenantSelector: React.FC = () => {
 
   const REGISTRATION_KEY = 'RegNeg2024';
   const DELETE_KEY = 'RegNeg2024';
-  const MAX_ATTEMPTS = 50;
+  const MAX_ATTEMPTS = 10;
   const BLOCK_DURATION = 15 * 60 * 1000; // 15 minutos
 
   useEffect(() => {
