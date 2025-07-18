@@ -15,7 +15,7 @@ import { useTheme } from '../hooks/useTheme';
 
 const RewardsManager: React.FC = () => {
   const [settings, setSettings] = useState<RewardSettings>(getRewardSettings());
-  const [statistics, setStatistics] = useState(getRewardStatistics());
+  const [statistics, setStatistics] = useState<any>(null);
   const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -25,26 +25,27 @@ const RewardsManager: React.FC = () => {
   const { colors } = useTheme();
 
   useEffect(() => {
-    loadData();
-    
+    const fetchData = async () => {
+      await loadData();
+    };
+    fetchData();
     // Set up periodic checks
-    const interval = setInterval(() => {
-      checkAllClientsForRewards();
-      cleanupExpiredCoupons();
-      loadData();
-    }, 60000); // Check every minute
-
+    const interval = setInterval(async () => {
+      await checkAllClientsForRewards();
+      await cleanupExpiredCoupons();
+      await loadData();
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  const loadData = () => {
-    setStatistics(getRewardStatistics());
+  const loadData = async () => {
+    const stats = await getRewardStatistics();
+    setStatistics(stats);
     setNotifications(getAdminNotifications().filter(n => n.type.includes('reward') || n.type.includes('coupon')));
   };
 
   const handleSaveSettings = async () => {
     if (!currentUser) return;
-    
     setLoading(true);
     try {
       const updatedSettings = {
@@ -52,14 +53,12 @@ const RewardsManager: React.FC = () => {
         updatedAt: new Date().toISOString(),
         updatedBy: currentUser.username
       };
-      
       saveRewardSettings(updatedSettings);
       setSettings(updatedSettings);
       setIsEditing(false);
-      
       // Check for new rewards after settings change
-      checkAllClientsForRewards();
-      loadData();
+      await checkAllClientsForRewards();
+      await loadData();
     } catch (error) {
       console.error('Error saving settings:', error);
     } finally {
@@ -67,9 +66,9 @@ const RewardsManager: React.FC = () => {
     }
   };
 
-  const handleMarkNotificationRead = (notificationId: string) => {
+  const handleMarkNotificationRead = async (notificationId: string) => {
     markNotificationAsRead(notificationId);
-    loadData();
+    await loadData();
   };
 
   const unreadNotifications = notifications.filter(n => !n.isRead);
@@ -122,7 +121,7 @@ const RewardsManager: React.FC = () => {
                 className="text-2xl font-bold theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                {statistics.totalCouponsGenerated}
+                {statistics ? statistics.totalCouponsGenerated : '...'}
               </p>
             </div>
             <div 
@@ -150,7 +149,7 @@ const RewardsManager: React.FC = () => {
                 className="text-2xl font-bold theme-transition"
                 style={{ color: colors?.success || '#10b981' }}
               >
-                {statistics.totalCouponsUsed}
+                {statistics ? statistics.totalCouponsUsed : '...'}
               </p>
             </div>
             <div 
@@ -178,7 +177,7 @@ const RewardsManager: React.FC = () => {
                 className="text-2xl font-bold theme-transition"
                 style={{ color: colors?.accent || '#3b82f6' }}
               >
-                {statistics.clientsWithRewards}
+                {statistics ? statistics.clientsWithRewards : '...'}
               </p>
             </div>
             <div 
@@ -206,7 +205,7 @@ const RewardsManager: React.FC = () => {
                 className="text-2xl font-bold theme-transition"
                 style={{ color: colors?.warning || '#f59e0b' }}
               >
-                {statistics.usageRate.toFixed(1)}%
+                {statistics ? statistics.usageRate.toFixed(1) : '...'}%
               </p>
             </div>
             <div 

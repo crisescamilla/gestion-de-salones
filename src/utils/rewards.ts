@@ -111,18 +111,17 @@ export const markNotificationAsRead = (notificationId: string): void => {
 };
 
 // Calculate client total spending
-export const calculateClientTotalSpending = (clientId: string): number => {
-  const appointments = getAppointments();
+export const calculateClientTotalSpending = async (clientId: string): Promise<number> => {
+  const appointments = await getAppointments();
   return appointments
-    .filter(apt => apt.clientId === clientId && apt.status === 'completed')
-    .reduce((total, apt) => total + apt.totalPrice, 0);
+    .filter(apt => apt.client_id === clientId && apt.status === 'completed')
+    .reduce((total, apt) => total + (apt.total_price || 0), 0);
 };
 
 // Get client's available coupons
-export const getClientAvailableCoupons = (clientId: string): RewardCoupon[] => {
+export const getClientAvailableCoupons = async (clientId: string): Promise<RewardCoupon[]> => {
   const coupons = getRewardCoupons();
   const now = new Date();
-  
   return coupons.filter(coupon => 
     coupon.clientId === clientId &&
     !coupon.isUsed &&
@@ -131,7 +130,7 @@ export const getClientAvailableCoupons = (clientId: string): RewardCoupon[] => {
 };
 
 // Get client's reward history
-export const getClientRewardHistory = (clientId: string): RewardHistory[] => {
+export const getClientRewardHistory = async (clientId: string): Promise<RewardHistory[]> => {
   const history = getRewardHistory();
   return history
     .filter(h => h.clientId === clientId)
@@ -139,30 +138,26 @@ export const getClientRewardHistory = (clientId: string): RewardHistory[] => {
 };
 
 // Check if client qualifies for reward
-export const checkClientRewardEligibility = (clientId: string): boolean => {
+export const checkClientRewardEligibility = async (clientId: string): Promise<boolean> => {
   const settings = getRewardSettings();
   if (!settings.isActive) return false;
-  
-  const totalSpent = calculateClientTotalSpending(clientId);
+  const totalSpent = await calculateClientTotalSpending(clientId);
   const existingCoupons = getRewardCoupons().filter(c => c.clientId === clientId);
-  
   // Check if client has reached threshold and hasn't received a coupon for this threshold
   const hasReachedThreshold = totalSpent >= settings.spendingThreshold;
   const hasActiveCoupon = existingCoupons.some(c => !c.isUsed && new Date(c.expiresAt) > new Date());
-  
   return hasReachedThreshold && !hasActiveCoupon;
 };
 
 // Generate reward coupon for client
-export const generateRewardCoupon = (clientId: string): RewardCoupon | null => {
+export const generateRewardCoupon = async (clientId: string): Promise<RewardCoupon | null> => {
   const settings = getRewardSettings();
-  const client = getClients().find(c => c.id === clientId);
-  
-  if (!client || !checkClientRewardEligibility(clientId)) {
+  const clients = await getClients();
+  const client = clients.find(c => c.id === clientId);
+  if (!client || !(await checkClientRewardEligibility(clientId))) {
     return null;
   }
-  
-  const totalSpent = calculateClientTotalSpending(clientId);
+  const totalSpent = await calculateClientTotalSpending(clientId);
   const coupon: RewardCoupon = {
     id: Date.now().toString(),
     clientId,
@@ -173,10 +168,8 @@ export const generateRewardCoupon = (clientId: string): RewardCoupon | null => {
     expiresAt: new Date(Date.now() + settings.couponValidityDays * 24 * 60 * 60 * 1000).toISOString(),
     triggerAmount: totalSpent
   };
-  
   // Save coupon
   saveRewardCoupon(coupon);
-  
   // Add to reward history
   const history: RewardHistory = {
     id: Date.now().toString() + '_history',
@@ -188,7 +181,6 @@ export const generateRewardCoupon = (clientId: string): RewardCoupon | null => {
     createdAt: new Date().toISOString()
   };
   saveRewardHistory(history);
-  
   // Create admin notification
   const notification: AdminNotification = {
     id: Date.now().toString() + '_notification',
@@ -201,12 +193,10 @@ export const generateRewardCoupon = (clientId: string): RewardCoupon | null => {
     createdAt: new Date().toISOString()
   };
   saveAdminNotification(notification);
-  
   // Update client total spent
   client.totalSpent = totalSpent;
   client.rewardsEarned = (client.rewardsEarned || 0) + 1;
   saveClient(client);
-  
   return coupon;
 };
 
@@ -245,19 +235,17 @@ export const useRewardCoupon = (couponCode: string, appointmentId: string): { su
 };
 
 // Check and generate rewards for all clients
-export const checkAllClientsForRewards = (): RewardCoupon[] => {
-  const clients = getClients();
+export const checkAllClientsForRewards = async (): Promise<RewardCoupon[]> => {
+  const clients = await getClients();
   const newCoupons: RewardCoupon[] = [];
-  
-  clients.forEach(client => {
-    if (checkClientRewardEligibility(client.id)) {
-      const coupon = generateRewardCoupon(client.id);
+  for (const client of clients) {
+    if (await checkClientRewardEligibility(client.id)) {
+      const coupon = await generateRewardCoupon(client.id);
       if (coupon) {
         newCoupons.push(coupon);
       }
     }
-  });
-  
+  }
   return newCoupons;
 };
 
@@ -273,11 +261,10 @@ export const getExpiredCoupons = (): RewardCoupon[] => {
 };
 
 // Clean up expired coupons and notify
-export const cleanupExpiredCoupons = (): void => {
+export const cleanupExpiredCoupons = async (): Promise<void> => {
   const expiredCoupons = getExpiredCoupons();
-  const clients = getClients();
-  
-  expiredCoupons.forEach(coupon => {
+  const clients = await getClients();
+  for (const coupon of expiredCoupons) {
     const client = clients.find(c => c.id === coupon.clientId);
     if (client) {
       const notification: AdminNotification = {
@@ -292,28 +279,24 @@ export const cleanupExpiredCoupons = (): void => {
       };
       saveAdminNotification(notification);
     }
-  });
+  }
 };
 
 // Get reward statistics
-export const getRewardStatistics = () => {
+export const getRewardStatistics = async () => {
   const coupons = getRewardCoupons();
-  const clients = getClients();
-  
+  const clients = await getClients();
   const totalCouponsGenerated = coupons.length;
   const totalCouponsUsed = coupons.filter(c => c.isUsed).length;
   const totalCouponsExpired = getExpiredCoupons().length;
   const totalCouponsActive = coupons.filter(c => !c.isUsed && new Date(c.expiresAt) > new Date()).length;
-  
   const clientsWithRewards = clients.filter(c => c.rewardsEarned && c.rewardsEarned > 0).length;
   const totalRewardsValue = coupons
     .filter(c => c.isUsed)
     .reduce((total, c) => {
-      // Calculate approximate value based on average appointment cost
-      const avgAppointmentCost = 500; // Estimate
+      const avgAppointmentCost = 500;
       return total + (avgAppointmentCost * (c.discountPercentage / 100));
     }, 0);
-  
   return {
     totalCouponsGenerated,
     totalCouponsUsed,

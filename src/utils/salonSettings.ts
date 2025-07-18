@@ -87,10 +87,10 @@ export const getSalonSettings = (): SalonSettings => {
 }
 
 // Save salon settings with validation and real-time sync
-export const saveSalonSettings = (
+export const saveSalonSettings = async (
   settings: Partial<SalonSettings>,
   updatedBy: string,
-): { success: boolean; error?: string } => {
+): Promise<{ success: boolean; error?: string }> => {
   console.log("💾 Saving salon settings:", settings)
 
   // Input validation básica
@@ -150,19 +150,96 @@ export const saveSalonSettings = (
   }
 
   try {
+    // 1. Guardar en localStorage primero
     localStorage.setItem(getTenantStorageKey(STORAGE_KEY), JSON.stringify(sanitizedSettings))
-    console.log("✅ Settings saved successfully")
+    console.log("✅ Settings saved to localStorage successfully")
 
-    // Notify all listeners about the change
-    notifySettingsChange(sanitizedSettings)
+    // 2. Obtener el tenant actual
+    const tenant = getCurrentTenant();
+    if (!tenant) {
+      console.error("❌ No hay tenant seleccionado");
+      return { success: false, error: "No hay tenant seleccionado" };
+    }
+
+    console.log("🏢 Tenant actual:", tenant.id);
+
+    // 3. Construir el payload para Supabase con mejor manejo de datos
+    const payload = {
+      tenant_id: tenant.id,
+      salon_name: sanitizedSettings.salonName,
+      salon_motto: sanitizedSettings.salonMotto,
+      address: sanitizedSettings.address || null,
+      phone: sanitizedSettings.phone || null,
+      email: sanitizedSettings.email || null,
+      whatsapp: sanitizedSettings.whatsapp || null,
+      instagram: sanitizedSettings.instagram || null,
+      facebook: sanitizedSettings.facebook || null,
+      website: sanitizedSettings.website || null,
+      logo: sanitizedSettings.logo || null,
+      hours: sanitizedSettings.hours ? JSON.stringify(sanitizedSettings.hours) : null, // Serializar el JSON
+      updated_at: sanitizedSettings.updatedAt,
+      updated_by: sanitizedSettings.updatedBy,
+    };
+
+    console.log("📤 Payload para Supabase:", payload);
+
+    // 4. Intentar guardar en Supabase con mejor manejo de errores
+    const { data, error } = await supabase
+      .from('salon_settings')
+      .upsert([payload], { onConflict: 'tenant_id' })
+      .select(); // Agregar select para obtener los datos insertados
+
+    console.log("📡 Respuesta de Supabase:", { data, error });
+
+    if (error) {
+      console.error("❌ Error al guardar en Supabase:", error);
+      
+      // Mostrar error más detallado
+      let errorMessage = "Error al guardar en Supabase";
+      if (error.message) {
+        errorMessage += ": " + error.message;
+      }
+      if (error.details) {
+        errorMessage += " - " + error.details;
+      }
+      if (error.hint) {
+        errorMessage += " (Sugerencia: " + error.hint + ")";
+      }
+      
+      console.error("Error detallado:", errorMessage);
+      
+      // Opcional: mostrar alert solo en desarrollo
+      if (process.env.NODE_ENV === 'development') {
+        alert(
+          "Error al guardar en Supabase:\n\n" +
+          JSON.stringify(error, null, 2) +
+          "\n\nPayload enviado:\n" +
+          JSON.stringify(payload, null, 2)
+        );
+      }
+      
+      return { success: false, error: errorMessage };
+    }
+
+    console.log("✅ Settings saved to Supabase successfully:", data);
+
+    // 5. Notificar cambios a los listeners
+    notifySettingsChange(sanitizedSettings);
     
-    // Sync settings to Supabase
-    syncToSupabase(SyncDataType.SETTINGS);
+    // 6. Sincronizar con el sistema de sync cruzado
+    try {
+      await syncToSupabase(SyncDataType.SETTINGS);
+      console.log("✅ Cross-browser sync completed");
+    } catch (syncError) {
+      console.error("⚠️ Warning: Cross-browser sync failed:", syncError);
+      // No fallar toda la operación por esto
+    }
 
     return { success: true }
+    
   } catch (error) {
-    console.error("❌ Error saving settings:", error)
-    return { success: false, error: "Error al guardar la configuración" }
+    console.error("❌ Error general al guardar settings:", error)
+    return { success: false, error: "Error inesperado al guardar la configuración: " + (error as Error).message }
   }
 }
 
@@ -209,27 +286,60 @@ export const saveSalonSettingsHistory = (oldSettings: SalonSettings, newSettings
  * Obtiene la configuración del salón desde Supabase para el tenant actual.
  */
 export async function getSalonSettingsFromSupabase(tenant_id: string) {
-  const { data, error } = await supabase
-    .from('salon_settings')
-    .select('*')
-    .eq('tenant_id', tenant_id)
-    .single();
-  if (error) throw error;
-  return data;
+  try {
+    const { data, error } = await supabase
+      .from('salon_settings')
+      .select('*')
+      .eq('tenant_id', tenant_id)
+      .single();
+    
+    if (error) {
+      console.error("Error al obtener settings de Supabase:", error);
+      throw error;
+    }
+    
+    // Parsear el JSON de hours si existe
+    if (data && data.hours && typeof data.hours === 'string') {
+      data.hours = JSON.parse(data.hours);
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Error en getSalonSettingsFromSupabase:", error);
+    throw error;
+  }
 }
 
 /**
  * Guarda (inserta o actualiza) la configuración del salón en Supabase.
  */
 export async function saveSalonSettingsToSupabase(tenant_id: string, settings: any) {
-  // Intenta actualizar primero
-  const { data, error } = await supabase
-    .from('salon_settings')
-    .upsert({ ...settings, tenant_id }, { onConflict: 'tenant_id' })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
+  try {
+    // Preparar el payload
+    const payload = {
+      ...settings,
+      tenant_id,
+      hours: settings.hours ? JSON.stringify(settings.hours) : null,
+      updated_at: new Date().toISOString()
+    };
+
+    // Intenta actualizar primero
+    const { data, error } = await supabase
+      .from('salon_settings')
+      .upsert(payload, { onConflict: 'tenant_id' })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error al guardar settings en Supabase:", error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error("Error en saveSalonSettingsToSupabase:", error);
+    throw error;
+  }
 }
 
 // Real-time salon name getter for components
