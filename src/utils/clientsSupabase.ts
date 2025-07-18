@@ -18,21 +18,23 @@ function mapClientToSupabase(client: Client, tenantId: string) {
 }
 
 // Guardar (insertar o actualizar) un cliente
-export async function saveClientToSupabase(client: Client, tenantId: string): Promise<boolean> {
+// Ahora retorna un objeto { ok: boolean, errorMsg?: string }
+export async function saveClientToSupabase(client: Client, tenantId: string): Promise<{ ok: boolean, errorMsg?: string }> {
   try {
     const clientToSave = mapClientToSupabase(client, tenantId);
+    console.log("🟦 Intentando guardar cliente en Supabase:", clientToSave);
     const { error } = await supabase
       .from("clients")
       .upsert([clientToSave], { onConflict: "id" });
     if (error) {
       console.error("❌ Error saving client to Supabase:", error);
       console.error("Client data that failed:", clientToSave);
-      return false;
+      return { ok: false, errorMsg: error.message || JSON.stringify(error) };
     }
-    return true;
-  } catch (error) {
+    return { ok: true };
+  } catch (error: any) {
     console.error("❌ Exception saving client to Supabase:", error);
-    return false;
+    return { ok: false, errorMsg: error.message || JSON.stringify(error) };
   }
 }
 

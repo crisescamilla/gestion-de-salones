@@ -83,8 +83,8 @@ const StaffManager: React.FC = () => {
       };
       // Guardar primero en Supabase
       const supabaseResult = await saveStaffMember(newStaff, currentTenant?.id);
-      if (supabaseResult === false) {
-        setMessage({ type: 'error', text: 'Error al guardar en Supabase. Verifica tu conexión o los datos.' });
+      if (!supabaseResult.ok) {
+        setMessage({ type: 'error', text: supabaseResult.errorMsg || 'Error al guardar en Supabase. Verifica tu conexión o los datos.' });
         setLoading(false);
         return;
       }

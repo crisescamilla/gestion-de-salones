@@ -52,7 +52,7 @@ const getCurrentTenantFromStorage = () => {
 // Datos de ejemplo de servicios (se inicializarán por tenant)
 const getDefaultServices = (): Service[] => [
   {
-    id: "1",
+    id: uuidv4(),
     name: "Corte de Cabello",
     description: "Corte profesional personalizado",
     price: 25,
@@ -63,7 +63,7 @@ const getDefaultServices = (): Service[] => [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "2",
+    id: uuidv4(),
     name: "Manicure",
     description: "Cuidado completo de uñas",
     price: 20,
@@ -74,7 +74,7 @@ const getDefaultServices = (): Service[] => [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "3",
+    id: uuidv4(),
     name: "Facial Hidratante",
     description: "Tratamiento facial profundo",
     price: 45,
@@ -85,7 +85,7 @@ const getDefaultServices = (): Service[] => [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "4",
+    id: uuidv4(),
     name: "Masaje Relajante",
     description: "Masaje corporal completo",
     price: 60,

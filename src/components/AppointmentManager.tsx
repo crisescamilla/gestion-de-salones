@@ -147,10 +147,10 @@ const AppointmentManager: React.FC = () => {
       if (currentTenant?.id) {
         clientsData = await getClientsFromSupabase(currentTenant.id);
       } else {
-        clientsData = getClients(); // fallback
+        clientsData = await Promise.resolve(getClients()); // fallback, ensure Promise for consistency
       }
       const servicesData = await getActiveServices();
-      const staffData = getStaffData();
+      const staffData = await Promise.resolve(getStaffData());
       setAppointments(appointmentsData)
       setClients(clientsData)
       setServices(servicesData)

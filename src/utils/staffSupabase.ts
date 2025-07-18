@@ -68,7 +68,8 @@ export async function getStaffFromSupabase(tenantId: string): Promise<StaffMembe
 }
 
 // Guardar (insertar o actualizar) un especialista
-export async function saveStaffToSupabase(staff: StaffMember, tenantId: string): Promise<boolean> {
+// Ahora retorna { ok: boolean, errorMsg?: string }
+export async function saveStaffToSupabase(staff: StaffMember, tenantId: string): Promise<{ ok: boolean, errorMsg?: string }> {
   try {
     console.log("💾 Saving staff to Supabase:", staff.name, "for tenant:", tenantId)
 
@@ -85,14 +86,14 @@ export async function saveStaffToSupabase(staff: StaffMember, tenantId: string):
     if (error) {
       console.error("❌ Error saving staff to Supabase:", error)
       console.error("Staff data that failed:", staffToSave)
-      return false
+      return { ok: false, errorMsg: error.message || JSON.stringify(error) };
     }
 
     console.log("✅ Staff saved to Supabase successfully:", data)
-    return true
-  } catch (error) {
+    return { ok: true };
+  } catch (error: any) {
     console.error("❌ Exception saving staff to Supabase:", error)
-    return false
+    return { ok: false, errorMsg: error.message || JSON.stringify(error) };
   }
 }
 

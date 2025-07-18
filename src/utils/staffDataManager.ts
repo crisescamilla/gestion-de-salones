@@ -4,6 +4,7 @@ import { emitEvent, subscribeToEvent, AppEvents } from "./eventManager"
 import { getCurrentTenant } from "./tenantManager"
 import { syncToSupabase, SyncDataType } from "./crossBrowserSync"
 import { saveStaffToSupabase, deleteStaffFromSupabase } from './staffSupabase'
+import { v4 as uuidv4 } from 'uuid';
 
 // ✅ MODIFICADO: Clave de almacenamiento con prefijo para tenant
 const getStaffStorageKey = (tenantId?: string): string => {
@@ -29,7 +30,7 @@ const CACHE_DURATION = 5000 // 5 segundos
 // Datos por defecto (importados desde staff.ts)
 const defaultStaffMembers: StaffMember[] = [
   {
-    id: "1",
+    id: uuidv4(),
     name: "Isabella Martínez",
     role: "Especialista en Tratamientos Faciales",
     specialties: ["tratamientos-faciales", "tratamientos-corporales"],
@@ -52,7 +53,7 @@ const defaultStaffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "2",
+    id: uuidv4(),
     name: "Sofía Hernández",
     role: "Estilista Senior",
     specialties: ["servicios-cabello"],
@@ -75,7 +76,7 @@ const defaultStaffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "3",
+    id: uuidv4(),
     name: "Carmen López",
     role: "Especialista en Uñas",
     specialties: ["servicios-unas"],
@@ -98,7 +99,7 @@ const defaultStaffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "4",
+    id: uuidv4(),
     name: "Alejandra Ruiz",
     role: "Masajista Terapéutica",
     specialties: ["masajes", "tratamientos-corporales"],
@@ -121,7 +122,7 @@ const defaultStaffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "5",
+    id: uuidv4(),
     name: "Valeria Torres",
     role: "Especialista Integral",
     specialties: ["tratamientos-faciales", "servicios-unas", "tratamientos-corporales"],
@@ -144,7 +145,7 @@ const defaultStaffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "6",
+    id: uuidv4(),
     name: "Gabriela Morales",
     role: "Directora de Spa",
     specialties: ["masajes", "tratamientos-faciales", "tratamientos-corporales"],
@@ -288,7 +289,7 @@ export const isStaffAvailableOnDay = (staffId: string, dayOfWeek: string, forceR
 }
 
 // ✅ Función para guardar datos de personal
-export const saveStaffMember = async (staffMember: StaffMember, tenantId?: string): Promise<boolean> => {
+export const saveStaffMember = async (staffMember: StaffMember, tenantId?: string): Promise<{ ok: boolean, errorMsg?: string }> => {
   // Obtener el tenant actual si no se proporciona uno
   if (!tenantId) {
     const currentTenant = getCurrentTenant()
@@ -298,14 +299,14 @@ export const saveStaffMember = async (staffMember: StaffMember, tenantId?: strin
   // Si no hay tenant, no guardar
   if (!tenantId) {
     console.warn("⚠️ No tenant ID available for saving staff data")
-    return false
+    return { ok: false, errorMsg: "No tenant ID available" };
   }
 
   try {
     // Guardar en Supabase primero
-    const supabaseOk = await saveStaffToSupabase(staffMember, tenantId);
-    if (!supabaseOk) {
-      return false;
+    const supabaseResult = await saveStaffToSupabase(staffMember, tenantId);
+    if (!supabaseResult.ok) {
+      return supabaseResult;
     }
     // Si Supabase fue exitoso, guardar en localStorage
     const storageKey = getStaffStorageKey(tenantId)
@@ -340,10 +341,10 @@ export const saveStaffMember = async (staffMember: StaffMember, tenantId?: strin
     // Sincronizar con Supabase para compartir entre navegadores
     syncToSupabase(SyncDataType.STAFF);
     console.log(`✅ Staff member saved for tenant ${tenantId}:`, staffMember.id)
-    return true;
-  } catch (error) {
+    return { ok: true };
+  } catch (error: any) {
     console.error(`❌ Error saving staff member for tenant ${tenantId}:`, error)
-    return false;
+    return { ok: false, errorMsg: error.message || JSON.stringify(error) };
   }
 }
 

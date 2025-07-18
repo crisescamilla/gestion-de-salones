@@ -1,8 +1,9 @@
 import type { StaffMember, ServiceCategory } from "../types"
+import { v4 as uuidv4 } from 'uuid';
 
 export const staffMembers: StaffMember[] = [
   {
-    id: "1",
+    id: uuidv4(),
     name: "Isabella Martínez",
     role: "Especialista en Tratamientos Faciales",
     specialties: ["tratamientos-faciales", "tratamientos-corporales"],
@@ -25,7 +26,7 @@ export const staffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "2",
+    id: uuidv4(),
     name: "Sofía Hernández",
     role: "Estilista Senior",
     specialties: ["servicios-cabello"],
@@ -48,7 +49,7 @@ export const staffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "3",
+    id: uuidv4(),
     name: "Carmen López",
     role: "Especialista en Uñas",
     specialties: ["servicios-unas"],
@@ -71,7 +72,7 @@ export const staffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "4",
+    id: uuidv4(),
     name: "Alejandra Ruiz",
     role: "Masajista Terapéutica",
     specialties: ["masajes", "tratamientos-corporales"],
@@ -94,7 +95,7 @@ export const staffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "5",
+    id: uuidv4(),
     name: "Valeria Torres",
     role: "Especialista Integral",
     specialties: ["tratamientos-faciales", "servicios-unas", "tratamientos-corporales"],
@@ -117,7 +118,7 @@ export const staffMembers: StaffMember[] = [
     updatedAt: new Date().toISOString(),
   },
   {
-    id: "6",
+    id: uuidv4(),
     name: "Gabriela Morales",
     role: "Directora de Spa",
     specialties: ["masajes", "tratamientos-faciales", "tratamientos-corporales"],

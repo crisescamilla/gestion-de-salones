@@ -30,6 +30,7 @@ export interface Tenant {
 }
 
 export interface TenantOwner {
+  phone: null;
   id: string;
   tenant_id: string;
   first_name: string;

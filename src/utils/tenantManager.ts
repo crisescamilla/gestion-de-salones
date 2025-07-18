@@ -388,19 +388,25 @@ export const createTenantInSupabase = async (tenant: Tenant): Promise<boolean> =
         slug: tenant.slug,
         business_type: tenant.businessType,
         logo: tenant.logo || null,
-        primary_color: tenant.primaryColor || null,
-        secondary_color: tenant.secondaryColor || null,
-        address: tenant.address || null,
-        phone: tenant.phone || null,
-        email: tenant.email || null,
+        primary_color: tenant.primaryColor,
+        secondary_color: tenant.secondaryColor,
+        address: tenant.address,
+        phone: tenant.phone,
+        email: tenant.email,
         website: tenant.website || null,
         description: tenant.description || null,
         is_active: tenant.isActive,
         created_at: tenant.createdAt,
         updated_at: tenant.updatedAt,
         owner_id: tenant.ownerId,
-        subscription: tenant.subscription || null,
-        settings: tenant.settings || null
+        subscription_plan: tenant.subscription?.plan || 'basic',
+        subscription_status: tenant.subscription?.status || 'active',
+        subscription_expires_at: tenant.subscription?.expiresAt || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        allow_online_booking: tenant.settings?.allowOnlineBooking ?? true,
+        require_approval: tenant.settings?.requireApproval ?? false,
+        timezone: tenant.settings?.timeZone || 'America/Mexico_City',
+        currency: tenant.settings?.currency || 'MXN',
+        language: tenant.settings?.language || 'es',
       }], {
         onConflict: 'id'
       });
@@ -435,6 +441,7 @@ export const createTenantOwnerInSupabase = async (owner: TenantOwner): Promise<b
         email: owner.email,
         first_name: owner.first_name,
         last_name: owner.last_name,
+        phone: owner.phone || '', // phone es NOT NULL
         password_hash: owner.password_hash,
         created_at: owner.created_at
       }], {
@@ -806,8 +813,8 @@ export const  initializeTenantData = async (tenantId: string, businessType: stri
     ];
   // Initialize with default services for business type
   const initialData = {
-    services: config.defaultServices.map((service, index) => ({
-      id: (index + 1).toString(),
+    services: config.defaultServices.map((service) => ({
+      id: uuidv4(),
       ...service,
       description: `Servicio de ${service.name.toLowerCase()}`,
       isActive: true,
@@ -1141,6 +1148,7 @@ export const migrateToMultiTenant = async (): Promise<void> => {
       tenant_id: defaultTenant.id,
       email: 'admin@bellavitaspa.com',
       first_name: 'Admin',
+      phone: null, // TenantOwner expects null, not string
       last_name: 'Bella Vita',
       is_active: true,
       password_hash: 'hashed-password', // This would be properly hashed
