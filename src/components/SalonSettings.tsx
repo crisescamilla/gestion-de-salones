@@ -186,7 +186,7 @@ const SalonSettings: React.FC = () => {
         updated_by: currentUser.username,
       });
       // Guardar en localStorage
-      const result = saveSalonSettings(
+      const result = await saveSalonSettings(
         {
           salonName: saved.salon_name,
           salonMotto: saved.salon_motto,
@@ -203,7 +203,7 @@ const SalonSettings: React.FC = () => {
           updatedBy: saved.updated_by,
         },
         currentUser.username,
-      )
+      );
       if (result.success) {
         setSettings(getSalonSettings())
         saveSalonSettingsHistory(oldSettings, getSalonSettings())
@@ -249,6 +249,19 @@ const SalonSettings: React.FC = () => {
     "saturday",
     "sunday"
   ];
+
+  // Valores por defecto para cada día
+  const defaultHours: Record<string, { open: string; close: string; isOpen: boolean }> = {
+    monday: { open: "09:00", close: "19:00", isOpen: true },
+    tuesday: { open: "09:00", close: "19:00", isOpen: true },
+    wednesday: { open: "09:00", close: "19:00", isOpen: true },
+    thursday: { open: "09:00", close: "19:00", isOpen: true },
+    friday: { open: "09:00", close: "19:00", isOpen: true },
+    saturday: { open: "09:00", close: "18:00", isOpen: true },
+    sunday: { open: "10:00", close: "18:00", isOpen: true },
+  };
+  // Mezclar los valores actuales con los defaults
+  const hours: Record<string, { open: string; close: string; isOpen: boolean }> = { ...defaultHours, ...(formData.hours || {}) };
 
   const getDayName = (day: string) => {
     const names = {
@@ -750,11 +763,10 @@ const SalonSettings: React.FC = () => {
                           {getDayName(day)}
                         </span>
                       </div>
-
                       <label className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={formData.hours[day as keyof typeof formData.hours].isOpen}
+                          checked={!!hours[day]?.isOpen}
                           onChange={(e) => handleHoursChange(day, "isOpen", e.target.checked)}
                           className="w-4 h-4 rounded focus:ring-2 theme-transition"
                           style={{ accentColor: colors?.accent || "#3b82f6" }}
@@ -764,12 +776,11 @@ const SalonSettings: React.FC = () => {
                         </span>
                       </label>
                     </div>
-
-                    {formData.hours[day as keyof typeof formData.hours].isOpen && (
+                    {hours[day]?.isOpen ? (
                       <div className="flex items-center space-x-2">
                         <input
                           type="time"
-                          value={formData.hours[day as keyof typeof formData.hours].open}
+                          value={hours[day]?.open || ""}
                           onChange={(e) => handleHoursChange(day, "open", e.target.value)}
                           className="px-3 py-2 rounded-lg focus:ring-2 theme-transition"
                           style={{
@@ -781,7 +792,7 @@ const SalonSettings: React.FC = () => {
                         <span style={{ color: colors?.textSecondary || "#6b7280" }}>a</span>
                         <input
                           type="time"
-                          value={formData.hours[day as keyof typeof formData.hours].close}
+                          value={hours[day]?.close || ""}
                           onChange={(e) => handleHoursChange(day, "close", e.target.value)}
                           className="px-3 py-2 rounded-lg focus:ring-2 theme-transition"
                           style={{
@@ -791,9 +802,7 @@ const SalonSettings: React.FC = () => {
                           }}
                         />
                       </div>
-                    )}
-
-                    {!formData.hours[day as keyof typeof formData.hours].isOpen && (
+                    ) : (
                       <span className="font-medium theme-transition" style={{ color: colors?.error || "#ef4444" }}>
                         Cerrado
                       </span>
@@ -819,8 +828,8 @@ const SalonSettings: React.FC = () => {
                         {getDayName(day)}:
                       </span>
                       <span className="theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                        {formData.hours[day as keyof typeof formData.hours].isOpen 
-                          ? `${formData.hours[day as keyof typeof formData.hours].open} - ${formData.hours[day as keyof typeof formData.hours].close}` 
+                        {hours[day as keyof typeof hours].isOpen 
+                          ? `${hours[day as keyof typeof hours].open} - ${hours[day as keyof typeof hours].close}` 
                           : "Cerrado"}
                       </span>
                     </div>
