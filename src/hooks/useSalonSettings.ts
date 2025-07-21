@@ -17,26 +17,28 @@ export const useSalonSettings = () => {
       const tenant = getCurrentTenant();
       let localSettings = getSalonSettings();
 
-      // Si no hay settings en localStorage, consulta Supabase
-      if (
-        (!localSettings || !localSettings.salonName || localSettings.salonName === "El nombre de tu salón") &&
-        tenant?.id
-      ) {
+      // Siempre intentar cargar desde Supabase si hay un tenant activo
+      if (tenant?.id) {
         try {
           const dbSettings = await getSalonSettingsFromSupabase(tenant.id);
           if (dbSettings) {
+            // Actualizar localStorage con los settings de Supabase
             saveSalonSettings(dbSettings, "sync_system");
             setSettings({
-              ...localSettings,
+              ...localSettings, // Mantener cualquier setting local que no esté en DB
               ...dbSettings,
             });
           } else {
+            // Si no hay settings en Supabase, usar los locales (que podrían ser por defecto)
             setSettings(localSettings);
           }
         } catch (e) {
+          console.error("Error fetching salon settings from Supabase:", e);
+          // Fallback a settings locales si falla la consulta a Supabase
           setSettings(localSettings);
         }
       } else {
+        // Si no hay tenant, usar solo settings locales (por defecto o previamente guardados)
         setSettings(localSettings);
       }
       setLoading(false);
