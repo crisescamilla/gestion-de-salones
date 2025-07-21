@@ -752,7 +752,7 @@ export const createTenant = async (
   await saveTenant(tenant)
 
   // Initialize tenant data storage
-  initializeTenantData(tenant.id, tenantData.businessType)
+  await initializeTenantData(tenant.id, tenantData.businessType) // Make sure to await this
 
   // Create admin user for this tenant if credentials provided
   if (ownerCredentials) {
@@ -770,68 +770,106 @@ export const  initializeTenantData = async (tenantId: string, businessType: stri
     return;
   }
   
-  const config = businessTypeConfigs.find((c) => c.id === businessType)
-  if (!config) return
-
   const tenantDataKey = `${STORAGE_KEYS.TENANT_DATA_PREFIX}${tenantId}`
+  const stored = localStorage.getItem(tenantDataKey)
 
-  const tenantData = await supabase
-    .from('tenants')
-    .select()
-    .eq('id', tenantId)
-    .maybeSingle();
-    const sessionTenant: Tenant[] = [
-      {
-        id: uuidv4(),
-        name: tenantData.data.name,
-        slug: tenantData.data.slug,
-        businessType: "salon",
-        primaryColor: "#ec4899",
-        secondaryColor: "#3b82f6",
-        address: "Av. Revolución 1234, Zona Centro, Tijuana, BC 22000, México",
-        phone: "664-563-6423",
-        email: "info@bellavitaspa.com",
-        website: "https://bellavitaspa.com",
-        description: "Tu destino de belleza y relajación en Tijuana",
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        ownerId: uuidv4(),
-        subscription: {
-          plan: "premium",
-          status: "active",
-          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-        settings: {
-          allowOnlineBooking: true,
-          requireApproval: false,
-          timeZone: "America/Tijuana",
-          currency: "MXN",
-          language: "es",
-        },
-      },
-    ];
-  // Initialize with default services for business type
-  const initialData = {
-    services: config.defaultServices.map((service) => ({
+  // If data already exists in localStorage, no need to re-initialize from default config
+  if (stored) {
+    console.log(`Tenant data for ${tenantId} already exists in localStorage. Skipping re-initialization.`);
+    return;
+  }
+
+  const config = businessTypeConfigs.find((c) => c.id === businessType)
+  if (!config) {
+    console.warn(`No business type config found for ${businessType}`);
+    return;
+  }
+
+  // Attempt to fetch existing data from Supabase for this tenant
+  let services = [];
+  let clients = [];
+  let appointments = [];
+  let staff = [];
+  let settings = {};
+  let themes = [];
+  let rewards = {};
+
+  try {
+    const { data: servicesData, error: servicesError } = await supabase
+      .from('services')
+      .select('*')
+      .eq('tenant_id', tenantId);
+    if (servicesError) throw servicesError;
+    services = servicesData.map(s => ({ ...s, id: s.id })); // Map to local type
+
+    const { data: clientsData, error: clientsError } = await supabase
+      .from('clients')
+      .select('*')
+      .eq('tenant_id', tenantId);
+    if (clientsError) throw clientsError;
+    clients = clientsData.map(c => ({ ...c, id: c.id }));
+
+    const { data: appointmentsData, error: appointmentsError } = await supabase
+      .from('appointments')
+      .select('*')
+      .eq('tenant_id', tenantId);
+    if (appointmentsError) throw appointmentsError;
+    appointments = appointmentsData.map(a => ({ ...a, id: a.id }));
+
+    const { data: staffData, error: staffError } = await supabase
+      .from('staff')
+      .select('*')
+      .eq('tenant_id', tenantId);
+    if (staffError) throw staffError;
+    staff = staffData.map(s => ({ ...s, id: s.id }));
+
+    const { data: settingsData, error: settingsError } = await supabase
+      .from('salon_settings')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .maybeSingle();
+    if (settingsError) throw settingsError;
+    settings = settingsData ? { ...settingsData, id: settingsData.id } : {};
+
+    const { data: themesData, error: themesError } = await supabase
+      .from('themes')
+      .select('*')
+      .eq('tenant_id', tenantId);
+    if (themesError) throw themesError;
+    themes = themesData.map(t => ({ ...t, id: t.id }));
+
+    const { data: rewardsData, error: rewardsError } = await supabase
+      .from('rewards')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .maybeSingle();
+    if (rewardsError) throw rewardsError;
+    rewards = rewardsData ? { ...rewardsData, id: rewardsData.id } : {};
+
+    console.log(`Fetched existing data for tenant ${tenantId} from Supabase.`);
+
+  } catch (error) {
+    console.error(`Error fetching tenant data from Supabase for ${tenantId}:`, error);
+    // Fallback to default data if Supabase fetch fails
+    services = config.defaultServices.map((service) => ({
       id: uuidv4(),
       ...service,
       description: `Servicio de ${service.name.toLowerCase()}`,
       isActive: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
-    })),
-    clients: [],
-    appointments: [],
-    staff: [],
-    settings: {
+    }));
+    clients = [];
+    appointments = [];
+    staff = [];
+    settings = {
       salonName: "",
       salonMotto: "Tu destino de belleza y relajación",
       updatedAt: new Date().toISOString(),
       updatedBy: "system",
-    },
-    themes: [],
-    rewards: {
+    };
+    themes = [];
+    rewards = {
       settings: {
         id: "1",
         spendingThreshold: 5000,
@@ -843,12 +881,23 @@ export const  initializeTenantData = async (tenantId: string, businessType: stri
       },
       coupons: [],
       history: [],
-    },
+    };
+    console.warn(`Using default data for tenant ${tenantId} due to Supabase fetch error.`);
   }
 
-  localStorage.setItem(tenantDataKey, JSON.stringify(initialData))
-  localStorage.setItem(STORAGE_KEYS.TENANTS, JSON.stringify(sessionTenant));
-}
+  const initialData = {
+    services,
+    clients,
+    appointments,
+    staff,
+    settings,
+    themes,
+    rewards,
+  };
+
+  localStorage.setItem(tenantDataKey, JSON.stringify(initialData));
+  console.log(`Tenant data for ${tenantId} initialized/updated in localStorage.`);
+};
 
 // Get tenant-specific data
 export const getTenantData = (tenantId: string, dataType: string): any => {

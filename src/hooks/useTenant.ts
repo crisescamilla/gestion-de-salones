@@ -57,13 +57,17 @@ export const useTenantProvider = (): TenantContext => {
             if (currentTenant) {
               console.log("Tenant encontrado en Supabase:", currentTenant);
               await setCurrentTenant(currentTenant); // Guardar en localStorage y sessionStorage
+              
+              // Inicializar datos del tenant desde Supabase
+              await initializeTenantData(currentTenant.id, currentTenant.businessType);
             } else {
               console.log("No se encontró tenant en Supabase");
             }
           }
+        } else {
+          // Si el tenant existe localmente, asegurar que sus datos estén inicializados
+          await initializeTenantData(currentTenant.id, currentTenant.businessType);
         }
-
-        
 
         if (currentTenant) {
           setTenant(currentTenant);
@@ -97,7 +101,12 @@ export const useTenantProvider = (): TenantContext => {
         foundTenant = await getTenantBySlugFromSupabase(slug);
         if (foundTenant) {
           await setCurrentTenant(foundTenant);
+          // Inicializar datos del tenant desde Supabase
+          await initializeTenantData(foundTenant.id, foundTenant.businessType);
         }
+      } else {
+        // Si el tenant existe localmente, asegurar que sus datos estén inicializados
+        await initializeTenantData(foundTenant.id, foundTenant.businessType);
       }
       return foundTenant;
     };
@@ -217,6 +226,7 @@ import {
   getTenantFromURL,
   getTenantOwnerById,
   getTenantBySlug,
-  syncTenantData
+  syncTenantData,
+  initializeTenantData
 } from '../utils/tenantManager';
 import { getTenantBySlug as getTenantBySlugFromSupabase } from '../utils/tenantSupabase';
