@@ -25,8 +25,9 @@ const cleanInvalidTenantData = (): void => {
 
     const tenants = JSON.parse(stored);
     const validTenants = tenants.filter((tenant: Tenant) => {
+      // Ensure ownerId is also a valid UUID
       if (!isValidUUID(tenant.id) || !isValidUUID(tenant.ownerId)) {
-        console.warn(`Removing invalid tenant with non-UUID ID: ${tenant.id}`);
+        console.warn(`Removing invalid tenant with non-UUID ID or ownerId: ${tenant.id}`);
         // Clean up associated data
         const tenantDataKey = `${STORAGE_KEYS.TENANT_DATA_PREFIX}${tenant.id}`;
         localStorage.removeItem(tenantDataKey);
@@ -62,8 +63,9 @@ const cleanInvalidTenantData = (): void => {
     const currentStored = localStorage.getItem(STORAGE_KEYS.CURRENT_TENANT);
     if (currentStored) {
       const currentTenant = JSON.parse(currentStored);
+      // Ensure ownerId is also a valid UUID
       if (!isValidUUID(currentTenant.id) || !isValidUUID(currentTenant.ownerId)) {
-        console.warn(`Removing invalid current tenant with non-UUID ID: ${currentTenant.id}`);
+        console.warn(`Removing invalid current tenant with non-UUID ID or ownerId: ${currentTenant.id}`);
         localStorage.removeItem(STORAGE_KEYS.CURRENT_TENANT);
         sessionStorage.removeItem(STORAGE_KEYS.CURRENT_TENANT);
         document.cookie = `current_tenant_slug=; path=/; max-age=0`;
@@ -376,12 +378,12 @@ export const createTenantInSupabase = async (tenant: Tenant): Promise<boolean> =
     // Test connection first
     const isConnected = await testSupabaseConnection();
     if (!isConnected) {
-      console.warn('⚠️ No connection to Supabase, skipping tenant creation');
+      console.warn("⚠️ No connection to Supabase, skipping tenant creation");
       return false;
     }
     
     const { error } = await supabase
-      .from('tenants')
+      .from("tenants")
       .upsert([{
         id: tenant.id,
         name: tenant.name,
@@ -399,27 +401,27 @@ export const createTenantInSupabase = async (tenant: Tenant): Promise<boolean> =
         created_at: tenant.createdAt,
         updated_at: tenant.updatedAt,
         owner_id: tenant.ownerId,
-        subscription_plan: tenant.subscription?.plan || 'basic',
-        subscription_status: tenant.subscription?.status || 'active',
+        subscription_plan: tenant.subscription?.plan || "basic",
+        subscription_status: tenant.subscription?.status || "active",
         subscription_expires_at: tenant.subscription?.expiresAt || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
         allow_online_booking: tenant.settings?.allowOnlineBooking ?? true,
         require_approval: tenant.settings?.requireApproval ?? false,
-        timezone: tenant.settings?.timeZone || 'America/Mexico_City',
-        currency: tenant.settings?.currency || 'MXN',
-        language: tenant.settings?.language || 'es',
+        timezone: tenant.settings?.timeZone || "America/Mexico_City",
+        currency: tenant.settings?.currency || "MXN",
+        language: tenant.settings?.language || "es",
       }], {
-        onConflict: 'id'
+        onConflict: "id"
       });
 
     if (error) {
-      console.error('Error creating tenant in Supabase:', error);
+      console.error("Error creating tenant in Supabase:", error);
       return false;
     }
 
-    console.log('Tenant created successfully in Supabase:', tenant.name);
+    console.log("Tenant created successfully in Supabase:", tenant.name);
     return true;
   } catch (error) {
-    console.error('Error in createTenantInSupabase:', error);
+    console.error("Error in createTenantInSupabase:", error);
     return false;
   }
 };
@@ -430,12 +432,12 @@ export const createTenantOwnerInSupabase = async (owner: TenantOwner): Promise<b
     // Test connection first
     const isConnected = await testSupabaseConnection();
     if (!isConnected) {
-      console.warn('⚠️ No connection to Supabase, skipping owner creation');
+      console.warn("⚠️ No connection to Supabase, skipping owner creation");
       return false;
     }
     
     const { error } = await supabase
-      .from('tenant_owners')
+      .from("tenant_owners")
       .upsert([{
         id: owner.id,
         email: owner.email,
@@ -445,18 +447,18 @@ export const createTenantOwnerInSupabase = async (owner: TenantOwner): Promise<b
         password_hash: owner.password_hash,
         created_at: owner.created_at
       }], {
-        onConflict: 'id'
+        onConflict: "id"
       });
 
     if (error) {
-      console.error('Error creating tenant owner in Supabase:', error);
+      console.error("Error creating tenant owner in Supabase:", error);
       return false;
     }
 
-    console.log('Tenant owner created successfully in Supabase:', owner.email);
+    console.log("Tenant owner created successfully in Supabase:", owner.email);
     return true;
   } catch (error) {
-    console.error('Error in createTenantOwnerInSupabase:', error);
+    console.error("Error in createTenantOwnerInSupabase:", error);
     return false;
   }
 };
@@ -465,19 +467,19 @@ export const createTenantOwnerInSupabase = async (owner: TenantOwner): Promise<b
 export const testSupabaseConnection = async (): Promise<boolean> => {
   try {
     const { data: _data, error } = await supabase
-      .from('tenants')
-      .select('count')
+      .from("tenants")
+      .select("count")
       .limit(1)
       .maybeSingle();
     
     if (error) {
-      console.warn('⚠️ Supabase connection test failed:', error.message);
+      console.warn("⚠️ Supabase connection test failed:", error.message);
       return false;
     }
     
     return true;
   } catch (error) {
-    console.warn('⚠️ Supabase connection test error:', error);
+    console.warn("⚠️ Supabase connection test error:", error);
     return false;
   }
 };
@@ -488,19 +490,19 @@ export const ensureTenantExistsInSupabase = async (tenantId: string): Promise<bo
     // Test connection first
     const isConnected = await testSupabaseConnection();
     if (!isConnected) {
-      console.warn('⚠️ No connection to Supabase, skipping tenant check');
+      console.warn("⚠️ No connection to Supabase, skipping tenant check");
       return false;
     }
     
     // Check if tenant exists in Supabase
     const { data, error } = await supabase
-      .from('tenants')
-      .select('id')
-      .eq('id', tenantId)
+      .from("tenants")
+      .select("id")
+      .eq("id", tenantId)
       .maybeSingle(); // Use maybeSingle() instead of single() to avoid PGRST116 error
 
     if (error) {
-      console.error('Error checking tenant existence in Supabase:', error);
+      console.error("Error checking tenant existence in Supabase:", error);
       return false;
     }
 
@@ -512,7 +514,7 @@ export const ensureTenantExistsInSupabase = async (tenantId: string): Promise<bo
     // Tenant doesn't exist, try to create it
     const tenant = getTenantById(tenantId);
     if (!tenant) {
-      console.error('Tenant not found locally:', tenantId);
+      console.error("Tenant not found locally:", tenantId);
       return false;
     }
 
@@ -524,7 +526,7 @@ export const ensureTenantExistsInSupabase = async (tenantId: string): Promise<bo
 
     return await createTenantInSupabase(tenant);
   } catch (error) {
-    console.error('Error in ensureTenantExistsInSupabase:', error);
+    console.error("Error in ensureTenantExistsInSupabase:", error);
     return false;
   }
 };
@@ -752,7 +754,7 @@ export const createTenant = async (
   await saveTenant(tenant)
 
   // Initialize tenant data storage
-  await initializeTenantData(tenant.id, tenantData.businessType) // Make sure to await this
+  await initializeTenantData(tenant.id, tenant.businessType) // Make sure to await this
 
   // Create admin user for this tenant if credentials provided
   if (ownerCredentials) {
@@ -763,7 +765,7 @@ export const createTenant = async (
 }
 
 // Initialize tenant-specific data
-export const  initializeTenantData = async (tenantId: string, businessType: string): Promise<void> => {
+export const  initializeTenantData = async (tenantId: string, businessType: string | undefined): Promise<void> => {
   // Validate tenant UUID
   if (!isValidUUID(tenantId)) {
     console.error(`Cannot initialize data for tenant with invalid UUID: ${tenantId}`);
@@ -776,6 +778,12 @@ export const  initializeTenantData = async (tenantId: string, businessType: stri
   // If data already exists in localStorage, no need to re-initialize from default config
   if (stored) {
     console.log(`Tenant data for ${tenantId} already exists in localStorage. Skipping re-initialization.`);
+    return;
+  }
+
+  // Ensure businessType is defined before trying to find config
+  if (!businessType) {
+    console.warn(`No business type provided for tenant ${tenantId}. Cannot initialize default services.`);
     return;
   }
 
@@ -1076,6 +1084,7 @@ export const getTenantFromURL = (): Tenant | null => {
     console.log("🔍 Buscando tenant con slug:", potentialSlug);
     const tenant = getTenantBySlug(potentialSlug);
     
+    // Ensure ownerId is also a valid UUID when returning tenant from URL
     if (tenant && isValidUUID(tenant.id) && isValidUUID(tenant.ownerId)) {
       console.log("✅ Tenant encontrado en URL:", tenant.name);
       return tenant;
@@ -1093,6 +1102,7 @@ export const getTenantFromURL = (): Tenant | null => {
       const cookieSlug = match[2];
       console.log("🍪 Buscando tenant desde cookie:", cookieSlug);
       const tenant = getTenantBySlug(cookieSlug);
+      // Ensure ownerId is also a valid UUID when returning tenant from cookie
       if (tenant && isValidUUID(tenant.id) && isValidUUID(tenant.ownerId)) {
         console.log("✅ Tenant encontrado en cookie:", tenant.name);
         return tenant;
@@ -1145,6 +1155,7 @@ export const syncTenantData = (): void => {
   
   // Sincronizar tenant actual
   const currentTenant = getCurrentTenant();
+  // Ensure ownerId is also a valid UUID when syncing current tenant
   if (currentTenant && isValidUUID(currentTenant.id) && isValidUUID(currentTenant.ownerId)) {
     sessionStorage.setItem(STORAGE_KEYS.CURRENT_TENANT, JSON.stringify(currentTenant));
     
