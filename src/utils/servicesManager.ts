@@ -141,19 +141,10 @@ export const getServices = async (tenantId?: string): Promise<Service[]> => {
     return [];
   }
 
-  // Intentar cargar desde localStorage primero
-  const storageKey = getTenantStorageKey("services", tenantId);
-  const stored = localStorage.getItem(storageKey);
-  let localServices: Service[] = stored ? JSON.parse(stored) : [];
-
-  if (localServices && localServices.length > 0) {
-    return localServices;
-  }
-
-  // Si no hay datos locales, consultar Supabase
+  // Siempre consulta Supabase
   const remoteServices = await getServicesFromSupabase(tenantId);
   if (remoteServices && remoteServices.length > 0) {
-    localStorage.setItem(storageKey, JSON.stringify(remoteServices));
+    localStorage.setItem(getTenantStorageKey("services", tenantId), JSON.stringify(remoteServices));
     return remoteServices;
   }
 
