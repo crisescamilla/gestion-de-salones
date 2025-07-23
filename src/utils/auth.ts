@@ -1,5 +1,6 @@
 import { AdminUser, LoginAttempt, AuthSession } from '../types';
 import { getCurrentTenant } from './tenantManager';
+import { getTenantBySlug } from './tenantSupabase';
 
 
 export const hashPassword = async (password: string): Promise<string> => {
@@ -568,19 +569,22 @@ export const repairAuth = async (tenantSlug: string, email: string, password: st
   console.log("🔧 Reparando autenticación para:", tenantSlug, email);
   
   try {
-    // 1. Obtener tenant por slug
-    const tenants = JSON.parse(localStorage.getItem('beauty-app-tenants') || '[]');
-    const tenant = tenants.find((t: any) => t.slug === tenantSlug);
+    // 1. Obtener tenant por slug de Supabase
+    const tenant = await getTenantBySlug(tenantSlug);
     
     if (!tenant) {
-      console.error("❌ Tenant no encontrado:", tenantSlug);
+      console.error("❌ Tenant no encontrado en Supabase:", tenantSlug);
       return { success: false, error: "Negocio no encontrado" };
     }
     
-    // 2. Crear hash de contraseña
+    // 2. Sincronizar tenant en localStorage si no existe
+    const { setCurrentTenant } = await import('./tenantManager');
+    setCurrentTenant(tenant);
+    
+    // 3. Crear hash de contraseña
     const passwordHash = await hashPassword(password);
     
-    // 3. Crear usuario administrador
+    // 4. Crear usuario administrador
     const adminUser: AdminUser = {
       id: Date.now().toString(),
       username: email.toLowerCase(),
@@ -590,12 +594,12 @@ export const repairAuth = async (tenantSlug: string, email: string, password: st
       isActive: true
     };
     
-    // 4. Guardar en almacenamiento específico del tenant
+    // 5. Guardar en almacenamiento específico del tenant
     const tenantStorageKey = `tenant-${tenant.id}-${STORAGE_KEYS.ADMIN_USERS}`;
     localStorage.setItem(tenantStorageKey, JSON.stringify([adminUser]));
     
     console.log("✅ Autenticación reparada exitosamente");
-    return { success: true, user: adminUser };
+    return { success: true, user: adminUser, tenant };
   } catch (error) {
     console.error("❌ Error reparando autenticación:", error);
     return { success: false, error: "Error interno" };

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Lock, User, Eye, EyeOff, Shield, AlertCircle, CheckCircle, Wrench } from 'lucide-react';
 import { authenticateUser, validatePassword, repairAuth } from '../utils/auth';
 import { AdminUser, AuthSession } from '../types';
-import { getCurrentTenant } from '../utils/tenantManager';
+import { getCurrentTenant, setCurrentTenant } from '../utils/tenantManager';
+import { getTenantByOwnerEmail } from '../utils/tenantSupabase';
 
 interface LoginFormProps {
   onLoginSuccess: (user: AdminUser, session: AuthSession) => void;
@@ -48,6 +49,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
         setError('No hay negocio seleccionado');
         setLoading(false);
         return;
+      }
+
+      const tenantByEmail = await getTenantByOwnerEmail(formData.username);
+
+      if (tenantByEmail && tenantByEmail.slug !== currentTenant.slug) {
+        setError(`Este correo está asociado a otro negocio. Intenta acceder desde ${tenantByEmail.slug}.`);
+        setLoading(false);
+        return;
+      }
+
+      // Si encontramos un tenant por email pero no es el actual, sincronizarlo
+      if (tenantByEmail && !currentTenant) {
+        setCurrentTenant(tenantByEmail);
       }
 
       const result = await authenticateUser(formData.username, formData.password);
@@ -371,3 +385,5 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 };
 
 export default LoginForm;
+
+

@@ -9,6 +9,8 @@ const STORAGE_KEYS = {
   TENANT_OWNERS: "beauty-app-tenant-owners",
   CURRENT_TENANT: "beauty-app-current-tenant",
   TENANT_DATA_PREFIX: "beauty-app-tenant-data-",
+  DEMO_INITIALIZED: "beauty-app-demo-initialized"
+
 }
 
 // UUID validation utility
