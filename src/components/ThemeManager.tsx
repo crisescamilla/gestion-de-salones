@@ -43,6 +43,7 @@ import { getCurrentUser } from '../utils/auth';
 import { getCurrentTenant, saveTenant } from '../utils/tenantManager';
 import { getSalonSettings, saveSalonSettings } from '../utils/salonSettings';
 import { syncToSupabase, SyncDataType } from '../utils/crossBrowserSync';
+import { useTranslation } from 'react-i18next';
 
 const ThemeManager: React.FC = () => {
   const [themes, setThemes] = useState<ThemeSettings[]>([]);
@@ -84,6 +85,8 @@ const ThemeManager: React.FC = () => {
       shadow: 'rgba(0, 0, 0, 0.1)'
     }
   });
+
+  const { t } = useTranslation();
 
   const currentUser = getCurrentUser();
   const currentTenant = getCurrentTenant();
@@ -524,10 +527,10 @@ const ThemeManager: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
             <Palette className="w-8 h-8 mr-3 text-blue-600" />
-            Configuración de Temas
+            {t('configuracion_temas')}
           </h2>
           <p className="text-gray-600 mt-1">
-            Personaliza la apariencia visual de toda la aplicación
+            {t('personaliza_apariencia')}
           </p>
         </div>
         
@@ -537,7 +540,7 @@ const ThemeManager: React.FC = () => {
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Sparkles className="w-4 h-4 mr-2" />
-            Presets
+            {t('presets')}
           </button>
           
           <button
@@ -545,7 +548,7 @@ const ThemeManager: React.FC = () => {
             className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Crear Tema
+            {t('crear_tema')}
           </button>
         </div>
       </div>
@@ -572,7 +575,7 @@ const ThemeManager: React.FC = () => {
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h3 className="text-lg font-semibold text-gray-900 flex items-center mb-4">
           <Image className="w-5 h-5 mr-2 text-blue-600" />
-          Logo del Salón
+          {t('logo_salon')}
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -587,7 +590,7 @@ const ThemeManager: React.FC = () => {
                 />
               ) : (
                 <span className="text-gray-400 text-sm text-center px-4">
-                  No hay logo<br />configurado
+                  {t('no_hay_logo')}<br />{t('configurado')}
                 </span>
               )}
             </div>
@@ -598,7 +601,7 @@ const ThemeManager: React.FC = () => {
                 className="mt-2 text-red-600 text-sm flex items-center hover:text-red-800"
               >
                 <Trash2 className="w-4 h-4 mr-1" />
-                Eliminar logo
+                {t('eliminar_logo')}
               </button>
             )}
           </div>
@@ -606,16 +609,15 @@ const ThemeManager: React.FC = () => {
           {/* Upload Controls */}
           <div className="flex flex-col justify-center">
             <p className="text-gray-700 mb-4">
-              Sube el logo de tu salón para que aparezca en la pantalla principal. 
-              El logo se mostrará únicamente para este salón y no afectará a otros negocios.
+              {t('sube_logo_salon')}
             </p>
             
             <label className="flex flex-col items-center px-4 py-6 bg-blue-50 text-blue-700 rounded-lg border-2 border-blue-200 cursor-pointer hover:bg-blue-100 transition-colors">
               <div className="flex items-center">
                 <Upload className="w-6 h-6 mr-2" />
-                <span className="font-medium">Seleccionar imagen</span>
+                <span className="font-medium">{t('seleccionar_imagen')}</span>
               </div>
-              <p className="text-sm text-blue-600 mt-2">PNG, JPG, GIF hasta 2MB</p>
+              <p className="text-sm text-blue-600 mt-2">{t('formatos_permitidos')}</p>
               <input 
                 type="file" 
                 className="hidden" 
@@ -628,7 +630,7 @@ const ThemeManager: React.FC = () => {
             {isUploadingLogo && (
               <div className="mt-4 flex items-center justify-center">
                 <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-                <span className="text-blue-600">Subiendo logo...</span>
+                <span className="text-blue-600">{t('subiendo_logo')}</span>
               </div>
             )}
             
@@ -643,13 +645,13 @@ const ThemeManager: React.FC = () => {
             
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-700">
-                <strong>Recomendaciones:</strong>
+                <strong>{t('recomendaciones')}:</strong>
               </p>
               <ul className="text-xs text-blue-600 mt-1 space-y-1 list-disc list-inside">
-                <li>Usa una imagen cuadrada para mejores resultados</li>
-                <li>Formatos recomendados: PNG o SVG con fondo transparente</li>
-                <li>Resolución mínima recomendada: 200x200 píxeles</li>
-                <li>El logo se mostrará únicamente para este salón</li>
+                <li>{t('recomendacion_cuadrada')}</li>
+                <li>{t('recomendacion_formatos')}</li>
+                <li>{t('recomendacion_resolucion')}</li>
+                <li>{t('recomendacion_unico_salon')}</li>
               </ul>
             </div>
           </div>
@@ -680,13 +682,13 @@ const ThemeManager: React.FC = () => {
                       className="w-full h-16 rounded-lg mb-3"
                       style={{ background: preset.preview }}
                     />
-                    <h4 className="font-semibold text-gray-900 mb-1">{preset.name}</h4>
-                    <p className="text-sm text-gray-600 mb-3">{preset.description}</p>
+                    <h4 className="font-semibold text-gray-900 mb-1">{t(preset.name)}</h4>
+                    <p className="text-sm text-gray-600 mb-3">{t(preset.description)}</p>
                     <button
                       onClick={() => handleCreateFromPreset(preset.id)}
                       className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
                     >
-                      Usar Este Tema
+                      {t('usar_este_tema')}
                     </button>
                   </div>
                 ))}
@@ -702,7 +704,7 @@ const ThemeManager: React.FC = () => {
         <div className="lg:col-span-1">
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Temas Disponibles</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t('temas_disponibles')}</h3>
               <div className="flex items-center space-x-2">
                 <label className="relative cursor-pointer">
                   <input
@@ -738,13 +740,13 @@ const ThemeManager: React.FC = () => {
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium text-gray-900 flex items-center">
-                      {theme.name}
+                      {t(theme.name)}
                       {theme.isActive && (
                         <Check className="w-4 h-4 ml-2 text-blue-600" />
                       )}
                       {theme.isDefault && (
                         <span className="ml-2 px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-full">
-                          Predeterminado
+                          {t('predeterminado')}
                         </span>
                       )}
                     </h4>
@@ -757,7 +759,7 @@ const ThemeManager: React.FC = () => {
                             handleApplyTheme(theme.id);
                           }}
                           className="p-1 text-green-600 hover:text-green-700"
-                          title="Aplicar tema"
+                          title={t('aplicar_tema')}
                           disabled={loading}
                         >
                           <Eye className="w-4 h-4" />
@@ -770,7 +772,7 @@ const ThemeManager: React.FC = () => {
                           startEditingTheme(theme);
                         }}
                         className="p-1 text-blue-600 hover:text-blue-700"
-                        title="Editar tema"
+                        title={t('editar_tema')}
                       >
                         <Settings className="w-4 h-4" />
                       </button>
@@ -781,7 +783,7 @@ const ThemeManager: React.FC = () => {
                           handleExportTheme(theme.id);
                         }}
                         className="p-1 text-gray-600 hover:text-gray-700"
-                        title="Exportar tema"
+                        title={t('exportar_tema')}
                       >
                         <Download className="w-4 h-4" />
                       </button>
@@ -793,7 +795,7 @@ const ThemeManager: React.FC = () => {
                             handleDeleteTheme(theme.id);
                           }}
                           className="p-1 text-red-600 hover:text-red-700"
-                          title="Eliminar tema"
+                          title={t('eliminar_tema')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -801,7 +803,7 @@ const ThemeManager: React.FC = () => {
                     </div>
                   </div>
                   
-                  <p className="text-sm text-gray-600 mb-3">{theme.description}</p>
+                  <p className="text-sm text-gray-600 mb-3">{t(theme.description)}</p>
                   
                   {/* Color Preview */}
                   <div className="flex space-x-1">
@@ -834,7 +836,7 @@ const ThemeManager: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {customTheme.id ? 'Editar Tema' : 'Crear Nuevo Tema'}
+                  {customTheme.id ? t('editar_tema') : t('crear_nuevo_tema')}
                 </h3>
                 <button
                   onClick={() => setIsEditing(false)}
@@ -849,27 +851,27 @@ const ThemeManager: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nombre del Tema *
+                      {t('nombre_tema')} *
                     </label>
                     <input
                       type="text"
                       value={customTheme.name || ''}
                       onChange={(e) => setCustomTheme(prev => ({ ...prev, name: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ej: Mi Tema Personalizado"
+                      placeholder={t('placeholder_nombre_tema')}
                     />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Descripción
+                      {t('descripcion')}
                     </label>
                     <input
                       type="text"
                       value={customTheme.description || ''}
                       onChange={(e) => setCustomTheme(prev => ({ ...prev, description: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Descripción del tema"
+                      placeholder={t('placeholder_descripcion_tema')}
                     />
                   </div>
                 </div>
@@ -883,7 +885,7 @@ const ThemeManager: React.FC = () => {
                         {group.colors.map(color => (
                           <div key={color.key} className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
-                              {color.label}
+                              {t('color_' + color.key)}
                             </label>
                             <div className="flex items-center space-x-2">
                               <input
@@ -897,12 +899,12 @@ const ThemeManager: React.FC = () => {
                                 value={customTheme.colors?.[color.key] || '#000000'}
                                 onChange={(e) => handleColorChange(color.key, e.target.value)}
                                 className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500"
-                                placeholder="#000000"
+                                placeholder={t('placeholder_color')}
                               />
                               <button
                                 onClick={() => navigator.clipboard.writeText(customTheme.colors?.[color.key] || '')}
                                 className="p-1 text-gray-400 hover:text-gray-600"
-                                title="Copiar color"
+                                title={t('copiar_color')}
                               >
                                 <Copy className="w-4 h-4" />
                               </button>
@@ -921,7 +923,7 @@ const ThemeManager: React.FC = () => {
                     onClick={() => setIsEditing(false)}
                     className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
                   >
-                    Cancelar
+                    {t('cancelar')}
                   </button>
                   <button
                     onClick={handleSaveCustomTheme}
@@ -933,7 +935,7 @@ const ThemeManager: React.FC = () => {
                     ) : (
                       <Save className="w-4 h-4 mr-2" />
                     )}
-                    {customTheme.id ? 'Actualizar Tema' : 'Crear Tema'}
+                    {customTheme.id ? t('actualizar_tema') : t('crear_tema')}
                   </button>
                 </div>
               </div>
@@ -941,7 +943,7 @@ const ThemeManager: React.FC = () => {
           ) : selectedTheme ? (
             <div className="bg-white rounded-xl shadow-lg p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Vista Previa del Tema</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{t('vista_previa_tema')}</h3>
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => setPreviewMode('desktop')}
@@ -982,8 +984,8 @@ const ThemeManager: React.FC = () => {
                       />
                     )}
                     <div>
-                      <h4 className="text-lg font-semibold">Nombre del Salón</h4>
-                      <p className="text-sm opacity-90">Tu lema aquí</p>
+                      <h4 className="text-lg font-semibold">{t('nombre_salon')}</h4>
+                      <p className="text-sm opacity-90">{t('tu_lema_aqui')}</p>
                     </div>
                   </div>
                 </div>
@@ -1000,9 +1002,9 @@ const ThemeManager: React.FC = () => {
                         color: selectedTheme.colors.text
                       }}
                     >
-                      <h5 className="font-medium mb-2">Tarjeta de Ejemplo</h5>
+                      <h5 className="font-medium mb-2">{t('tarjeta_ejemplo')}</h5>
                       <p style={{ color: selectedTheme.colors.textSecondary }} className="text-sm">
-                        Contenido de ejemplo para mostrar los colores del tema.
+                        {t('contenido_ejemplo_tema')}
                       </p>
                     </div>
                     
@@ -1014,9 +1016,9 @@ const ThemeManager: React.FC = () => {
                         color: selectedTheme.colors.text
                       }}
                     >
-                      <h5 className="font-medium mb-2">Otra Tarjeta</h5>
+                      <h5 className="font-medium mb-2">{t('otra_tarjeta')}</h5>
                       <p style={{ color: selectedTheme.colors.textSecondary }} className="text-sm">
-                        Más contenido de ejemplo.
+                        {t('mas_contenido_ejemplo')}
                       </p>
                     </div>
                   </div>
@@ -1027,19 +1029,19 @@ const ThemeManager: React.FC = () => {
                       className="px-4 py-2 rounded-lg text-white font-medium"
                       style={{ backgroundColor: selectedTheme.colors.primary }}
                     >
-                      Botón Primario
+                      {t('boton_primario')}
                     </button>
                     <button 
                       className="px-4 py-2 rounded-lg text-white font-medium"
                       style={{ backgroundColor: selectedTheme.colors.secondary }}
                     >
-                      Botón Secundario
+                      {t('boton_secundario')}
                     </button>
                     <button 
                       className="px-4 py-2 rounded-lg text-white font-medium"
                       style={{ backgroundColor: selectedTheme.colors.accent }}
                     >
-                      Botón Acento
+                      {t('boton_acento')}
                     </button>
                   </div>
 
@@ -1049,25 +1051,25 @@ const ThemeManager: React.FC = () => {
                       className="px-3 py-1 rounded-full text-white text-sm"
                       style={{ backgroundColor: selectedTheme.colors.success }}
                     >
-                      Éxito
+                      {t('exito')}
                     </span>
                     <span 
                       className="px-3 py-1 rounded-full text-white text-sm"
                       style={{ backgroundColor: selectedTheme.colors.warning }}
                     >
-                      Advertencia
+                      {t('advertencia')}
                     </span>
                     <span 
                       className="px-3 py-1 rounded-full text-white text-sm"
                       style={{ backgroundColor: selectedTheme.colors.error }}
                     >
-                      Error
+                      {t('error')}
                     </span>
                     <span 
                       className="px-3 py-1 rounded-full text-white text-sm"
                       style={{ backgroundColor: selectedTheme.colors.info }}
                     >
-                      Información
+                      {t('informacion')}
                     </span>
                   </div>
                 </div>
@@ -1076,8 +1078,8 @@ const ThemeManager: React.FC = () => {
               {/* Theme Actions */}
               <div className="flex justify-between items-center mt-6 pt-6 border-t border-gray-200">
                 <div>
-                  <h4 className="font-medium text-gray-900">{selectedTheme.name}</h4>
-                  <p className="text-sm text-gray-600">{selectedTheme.description}</p>
+                  <h4 className="font-medium text-gray-900">{t(selectedTheme.name)}</h4>
+                  <p className="text-sm text-gray-600">{t(selectedTheme.description)}</p>
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -1092,7 +1094,7 @@ const ThemeManager: React.FC = () => {
                       ) : (
                         <Check className="w-4 h-4 mr-2" />
                       )}
-                      Aplicar Tema
+                      {t('aplicar_tema')}
                     </button>
                   )}
                   
@@ -1101,7 +1103,7 @@ const ThemeManager: React.FC = () => {
                     className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <Settings className="w-4 h-4 mr-2" />
-                    Editar
+                    {t('editar')}
                   </button>
                 </div>
               </div>
@@ -1112,7 +1114,7 @@ const ThemeManager: React.FC = () => {
                 <Palette className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Selecciona un Tema</h3>
                 <p className="text-gray-600">
-                  Elige un tema de la lista para ver su vista previa y opciones de personalización.
+                  {t('elige_tema_lista')}
                 </p>
               </div>
             </div>

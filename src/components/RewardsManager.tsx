@@ -12,6 +12,8 @@ import {
 import { RewardSettings, AdminNotification } from '../types';
 import { getCurrentUser } from '../utils/auth';
 import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
+
 
 const RewardsManager: React.FC = () => {
   const [settings, setSettings] = useState<RewardSettings>(getRewardSettings());
@@ -20,6 +22,9 @@ const RewardsManager: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const currentUser = getCurrentUser();
+
+  const { t } = useTranslation();
+
 
   // Real-time theme
   const { colors } = useTheme();
@@ -83,13 +88,13 @@ const RewardsManager: React.FC = () => {
             style={{ color: colors?.text || '#1f2937' }}
           >
             <Gift className="w-8 h-8 mr-3" style={{ color: colors?.accent || '#3b82f6' }} />
-            Sistema de Recompensas
+            {t('sistema_recompensas')}
           </h2>
           <p 
             className="mt-1 theme-transition"
             style={{ color: colors?.textSecondary || '#6b7280' }}
           >
-            Gestiona el programa de fidelización automático
+            {t('gestiona_fidelizacion')}
           </p>
         </div>
         
@@ -99,7 +104,7 @@ const RewardsManager: React.FC = () => {
           style={{ backgroundColor: colors?.accent || '#3b82f6' }}
         >
           <Settings className="w-4 h-4 mr-2" />
-          Configurar
+          {t('configurar')}
         </button>
       </div>
 
@@ -115,7 +120,7 @@ const RewardsManager: React.FC = () => {
                 className="text-sm font-medium theme-transition"
                 style={{ color: colors?.textSecondary || '#6b7280' }}
               >
-                Cupones Generados
+                {t('cupones_generados')}
               </p>
               <p 
                 className="text-2xl font-bold theme-transition"
@@ -143,7 +148,7 @@ const RewardsManager: React.FC = () => {
                 className="text-sm font-medium theme-transition"
                 style={{ color: colors?.textSecondary || '#6b7280' }}
               >
-                Cupones Utilizados
+                {t('cupones_utilizados')}
               </p>
               <p 
                 className="text-2xl font-bold theme-transition"
@@ -171,7 +176,7 @@ const RewardsManager: React.FC = () => {
                 className="text-sm font-medium theme-transition"
                 style={{ color: colors?.textSecondary || '#6b7280' }}
               >
-                Clientes con Recompensas
+                {t('clientes_con_recompensas')}
               </p>
               <p 
                 className="text-2xl font-bold theme-transition"
@@ -199,7 +204,7 @@ const RewardsManager: React.FC = () => {
                 className="text-sm font-medium theme-transition"
                 style={{ color: colors?.textSecondary || '#6b7280' }}
               >
-                Tasa de Uso
+                {t('tasa_uso')}
               </p>
               <p 
                 className="text-2xl font-bold theme-transition"
@@ -228,7 +233,7 @@ const RewardsManager: React.FC = () => {
             className="text-lg font-semibold mb-4 theme-transition"
             style={{ color: colors?.text || '#1f2937' }}
           >
-            Configuración del Sistema
+            {t('configuracion_sistema')}
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -237,7 +242,7 @@ const RewardsManager: React.FC = () => {
                 className="block text-sm font-medium mb-2 theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Umbral de Compras (MXN)
+                {t('umbral_compras')}
               </label>
               <div className="relative">
                 <DollarSign 
@@ -265,7 +270,7 @@ const RewardsManager: React.FC = () => {
                 className="block text-sm font-medium mb-2 theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Porcentaje de Descuento (%)
+                {t('porcentaje_descuento')}
               </label>
               <div className="relative">
                 <Percent 
@@ -294,7 +299,7 @@ const RewardsManager: React.FC = () => {
                 className="block text-sm font-medium mb-2 theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Validez del Cupón (días)
+                {t('validez_cupon')}
               </label>
               <div className="relative">
                 <Calendar 
@@ -335,7 +340,7 @@ const RewardsManager: React.FC = () => {
                 className="ml-2 text-sm theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Sistema activo
+                {t('sistema_activo')}
               </span>
             </label>
 
@@ -349,7 +354,7 @@ const RewardsManager: React.FC = () => {
                   backgroundColor: colors?.background || '#f8fafc'
                 }}
               >
-                Cancelar
+                {t('cancelar')}
               </button>
               <button
                 onClick={handleSaveSettings}
@@ -360,7 +365,7 @@ const RewardsManager: React.FC = () => {
                 {loading ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                 ) : null}
-                Guardar Cambios
+                {t('guardar_cambios')}
               </button>
             </div>
           </div>
@@ -378,7 +383,7 @@ const RewardsManager: React.FC = () => {
             style={{ color: colors?.text || '#1f2937' }}
           >
             <Gift className="w-5 h-5 mr-2" style={{ color: colors?.accent || '#3b82f6' }} />
-            Notificaciones Recientes ({unreadNotifications.length})
+            {t('notificaciones_recientes')} ({unreadNotifications.length})
           </h3>
           
           <div className="space-y-3">
@@ -416,7 +421,7 @@ const RewardsManager: React.FC = () => {
                   className="ml-4 text-xs font-medium transition-colors theme-transition"
                   style={{ color: colors?.accent || '#3b82f6' }}
                 >
-                  Marcar leída
+                  {t('marcar_leida')}
                 </button>
               </div>
             ))}
@@ -433,7 +438,7 @@ const RewardsManager: React.FC = () => {
           className="text-lg font-semibold mb-4 theme-transition"
           style={{ color: colors?.text || '#1f2937' }}
         >
-          Configuración Actual
+          {t('configuracion_actual')}
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -446,7 +451,7 @@ const RewardsManager: React.FC = () => {
               className="text-sm theme-transition"
               style={{ color: colors?.textSecondary || '#6b7280' }}
             >
-              Umbral de Compras
+              {t('umbral_compras')}
             </p>
             <p 
               className="text-xl font-bold theme-transition"
@@ -465,7 +470,7 @@ const RewardsManager: React.FC = () => {
               className="text-sm theme-transition"
               style={{ color: colors?.textSecondary || '#6b7280' }}
             >
-              Descuento
+              {t('descuento')}
             </p>
             <p 
               className="text-xl font-bold theme-transition"
@@ -484,7 +489,7 @@ const RewardsManager: React.FC = () => {
               className="text-sm theme-transition"
               style={{ color: colors?.textSecondary || '#6b7280' }}
             >
-              Validez
+              {t('validez')}
             </p>
             <p 
               className="text-xl font-bold theme-transition"
@@ -515,7 +520,7 @@ const RewardsManager: React.FC = () => {
               className="text-sm theme-transition"
               style={{ color: colors?.textSecondary || '#6b7280' }}
             >
-              Estado
+              {t('estado')}
             </p>
             <p 
               className="text-xl font-bold theme-transition"
@@ -523,7 +528,7 @@ const RewardsManager: React.FC = () => {
                 color: settings.isActive ? (colors?.success || '#10b981') : (colors?.error || '#ef4444')
               }}
             >
-              {settings.isActive ? 'Activo' : 'Inactivo'}
+              {settings.isActive ? t('activo') : t('inactivo')}
             </p>
           </div>
         </div>

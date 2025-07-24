@@ -30,6 +30,7 @@ import {
 } from '../utils/servicesManager';
 import { getCurrentTenant } from '../utils/tenantManager';
 import { syncDataAcrossBrowsers } from '../utils/syncManager';
+import { useTranslation } from 'react-i18next';
 
 const ServicesManager: React.FC = () => {
   const [services, setServices] = useState<Service[]>([]);
@@ -42,7 +43,7 @@ const ServicesManager: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'warning'; text: string } | null>(null);
   const [showRepairTools, setShowRepairTools] = useState(false);
   const [repairLoading, setRepairLoading] = useState(false);
-  
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const currentTenant = getCurrentTenant();
 
@@ -64,7 +65,7 @@ const ServicesManager: React.FC = () => {
       console.log(`📊 Loaded ${allServices.length} services`);
     } catch (error) {
       console.error('Error loading services:', error);
-      setMessage({ type: 'error', text: 'Error al cargar servicios' });
+      setMessage({ type: 'error', text: t('error_cargar_servicios') });
     }
   };
 
@@ -76,11 +77,11 @@ const ServicesManager: React.FC = () => {
       if (existingService) {
         // Update existing service
         await saveService(serviceData, 'admin');
-        setMessage({ type: 'success', text: 'Servicio actualizado exitosamente' });
+        setMessage({ type: 'success', text: t('servicio_guardado') });
       } else {
         // Create new service
         await createService(serviceData, 'admin');
-        setMessage({ type: 'success', text: 'Servicio creado exitosamente' });
+        setMessage({ type: 'success', text: t('servicio_guardado') });
       }
       
       loadServices();
@@ -91,35 +92,35 @@ const ServicesManager: React.FC = () => {
       syncDataAcrossBrowsers();
     } catch (error) {
       console.error('Error saving service:', error);
-      setMessage({ type: 'error', text: 'Error al guardar servicio' });
+      setMessage({ type: 'error', text: t('error_guardar_servicio') });
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteService = async (serviceId: string) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este servicio?')) {
+    if (window.confirm(t('confirmar_eliminar_servicio'))) {
       try {
         await deleteService(serviceId, 'admin');
         loadServices();
-        setMessage({ type: 'success', text: 'Servicio eliminado exitosamente' });
+        setMessage({ type: 'success', text: t('servicio_eliminado') });
         
         // Sincronizar datos entre navegadores
         syncDataAcrossBrowsers();
       } catch (error) {
         console.error('Error deleting service:', error);
-        setMessage({ type: 'error', text: 'Error al eliminar servicio' });
+        setMessage({ type: 'error', text: t('error_eliminar_servicio') });
       }
     }
   };
 
   const handleRepairServices = async () => {
     if (!currentTenant) {
-      setMessage({ type: 'error', text: 'No hay negocio seleccionado' });
+      setMessage({ type: 'error', text: t('no_negocio_seleccionado') });
       return;
     }
     
-    if (window.confirm(`¿Estás seguro de que deseas reparar los servicios para ${currentTenant.name}? Esto puede ayudar a resolver problemas de sincronización.`)) {
+    if (window.confirm(t('confirmar_reparar_servicios', { name: currentTenant.name }))) {
       setRepairLoading(true);
       try {
         // Limpiar caché de servicios
@@ -131,10 +132,10 @@ const ServicesManager: React.FC = () => {
         // Sincronizar datos entre navegadores
         syncDataAcrossBrowsers();
         
-        setMessage({ type: 'success', text: 'Servicios reparados exitosamente' });
+        setMessage({ type: 'success', text: t('servicios_reparados') });
       } catch (error) {
         console.error('Error repairing services:', error);
-        setMessage({ type: 'error', text: 'Error al reparar servicios' });
+        setMessage({ type: 'error', text: t('error_reparar_servicios') });
       } finally {
         setRepairLoading(false);
       }
@@ -168,17 +169,17 @@ const ServicesManager: React.FC = () => {
             style={{ color: colors?.text || '#1f2937' }}
           >
             <Scissors className="w-8 h-8 mr-3" style={{ color: colors?.primary || '#0ea5e9' }} />
-            Gestión de Servicios
+            {t('gestion_servicios')}
           </h2>
           <p 
             className="mt-1 theme-transition"
             style={{ color: colors?.textSecondary || '#6b7280' }}
           >
-            Administra los servicios ofrecidos por tu salón
+            {t('administra_servicios')}
           </p>
           {currentTenant && (
             <p className="text-sm mt-1" style={{ color: colors?.primary || '#0ea5e9' }}>
-              Negocio: {currentTenant.name}
+              {t('negocio')}: {currentTenant.name}
             </p>
           )}
         </div>
@@ -191,7 +192,7 @@ const ServicesManager: React.FC = () => {
               backgroundColor: colors?.warning ? `${colors.warning}1a` : '#f59e0b1a',
               color: colors?.warning || '#f59e0b',
             }}
-            title="Herramientas de reparación"
+            title={t('herramientas_reparacion')}
           >
             <Wrench className="w-4 h-4" />
           </button>
@@ -203,7 +204,7 @@ const ServicesManager: React.FC = () => {
               backgroundColor: colors?.background || '#f8fafc',
               color: colors?.textSecondary || '#6b7280',
             }}
-            title="Actualizar datos"
+            title={t('actualizar_datos')}
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -217,7 +218,7 @@ const ServicesManager: React.FC = () => {
             style={{ backgroundColor: colors?.primary || '#0ea5e9' }}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Agregar Servicio
+            {t('agregar_servicio')}
           </button>
         </div>
       </div>
@@ -341,7 +342,7 @@ const ServicesManager: React.FC = () => {
           />
           <input
             type="text"
-            placeholder="Buscar servicios..."
+            placeholder={t('buscar_servicios')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-lg focus:ring-2 focus:border-transparent theme-transition"
@@ -368,7 +369,7 @@ const ServicesManager: React.FC = () => {
               color: colors?.text || '#1f2937'
             }}
           >
-            <option value="all">Todas las categorías</option>
+            <option value="all">{t('todas_las_categorias')}</option>
             {serviceCategories.map(category => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -392,9 +393,9 @@ const ServicesManager: React.FC = () => {
               color: colors?.text || '#1f2937'
             }}
           >
-            <option value="all">Todos los estados</option>
-            <option value="active">Solo activos</option>
-            <option value="inactive">Solo inactivos</option>
+            <option value="all">{t('todos_los_estados')}</option>
+            <option value="active">{t('solo_activos')}</option>
+            <option value="inactive">{t('solo_inactivos')}</option>
           </select>
         </div>
       </div>
@@ -414,12 +415,12 @@ const ServicesManager: React.FC = () => {
               className="text-lg font-medium mb-2 theme-transition"
               style={{ color: colors?.text || '#1f2937' }}
             >
-              No se encontraron servicios
+              {t('no_se_encontraron_servicios')}
             </h3>
             <p className="theme-transition" style={{ color: colors?.textSecondary || '#6b7280' }}>
               {searchTerm || filterCategory !== 'all' || filterActive !== 'all' 
-                ? 'Intenta cambiar los filtros de búsqueda' 
-                : 'Agrega servicios para comenzar'}
+                ? t('intenta_cambiar_filtros') 
+                : t('agrega_servicios_para_comenzar')}
             </p>
           </div>
         ) : (
@@ -465,7 +466,7 @@ interface ServiceCardProps {
 
 const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, colors }) => {
   const category = serviceCategories.find(c => c.id === service.category);
-  
+  const { t } = useTranslation();
   return (
     <div 
       className="rounded-xl shadow-lg overflow-hidden theme-transition"
@@ -497,7 +498,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, co
                 : colors?.error || '#ef4444'
             }}
           >
-            {service.isActive !== false ? 'Activo' : 'Inactivo'}
+            {service.isActive !== false ? t('activo') : t('inactivo')}
           </div>
         </div>
       </div>
@@ -507,7 +508,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, co
           className="text-sm mb-4 line-clamp-2 theme-transition"
           style={{ color: colors?.textSecondary || '#6b7280' }}
         >
-          {service.description || 'Sin descripción'}
+          {service.description || t('sin_descripcion')}
         </p>
         
         <div className="grid grid-cols-2 gap-4 mb-4">
@@ -521,7 +522,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, co
                 className="text-sm font-medium theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Precio
+                {t('precio')}
               </span>
             </div>
             <p 
@@ -542,14 +543,14 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, co
                 className="text-sm font-medium theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Duración
+                {t('duracion')}
               </span>
             </div>
             <p 
               className="text-lg font-bold theme-transition"
               style={{ color: colors?.secondary || '#06b6d4' }}
             >
-              {service.duration} min
+              {service.duration} {t('min')}
             </p>
           </div>
         </div>
@@ -563,7 +564,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ service, onEdit, onDelete, co
             className="text-sm font-medium theme-transition"
             style={{ color: colors?.text || '#1f2937' }}
           >
-            Categoría:
+            {t('categoria')}:
           </span>
           <span 
             className="ml-2 px-2 py-1 rounded-full text-xs font-medium theme-transition"
@@ -614,6 +615,7 @@ interface ServiceFormProps {
 }
 
 const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, loading, colors }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<Service>({
     id: service?.id || '',
     name: service?.name || '',
@@ -643,7 +645,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, lo
               className="text-xl font-semibold theme-transition"
               style={{ color: colors?.text || '#1f2937' }}
             >
-              {service ? 'Editar Servicio' : 'Nuevo Servicio'}
+              {service ? t('editar_servicio') : t('nuevo_servicio')}
             </h3>
             <button
               onClick={onCancel}
@@ -661,7 +663,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, lo
                 className="block text-sm font-medium mb-2 theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Nombre del Servicio
+                {t('nombre_servicio')}
               </label>
               <input
                 type="text"
@@ -683,7 +685,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, lo
                 className="block text-sm font-medium mb-2 theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Categoría
+                {t('categoria')}
               </label>
               <select
                 value={formData.category}
@@ -711,7 +713,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, lo
                   className="block text-sm font-medium mb-2 theme-transition"
                   style={{ color: colors?.text || '#1f2937' }}
                 >
-                  Precio ($)
+                  {t('precio')} ({t('dolar')})
                 </label>
                 <input
                   type="number"
@@ -734,7 +736,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, lo
                   className="block text-sm font-medium mb-2 theme-transition"
                   style={{ color: colors?.text || '#1f2937' }}
                 >
-                  Duración (minutos)
+                  {t('duracion')} ({t('minutos')})
                 </label>
                 <input
                   type="number"
@@ -759,7 +761,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, lo
                 className="block text-sm font-medium mb-2 theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Descripción
+                {t('descripcion')}
               </label>
               <textarea
                 value={formData.description}
@@ -788,14 +790,14 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, lo
                   className="text-sm font-medium theme-transition"
                   style={{ color: colors?.text || '#1f2937' }}
                 >
-                  Servicio activo
+                  {t('servicio_activo')}
                 </span>
               </label>
               <p 
                 className="text-xs mt-1 theme-transition"
                 style={{ color: colors?.textSecondary || '#6b7280' }}
               >
-                Los servicios inactivos no aparecerán en la reserva de citas
+                {t('servicios_inactivos_no_aparecen')}
               </p>
             </div>
             
@@ -812,7 +814,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, lo
                 }}
                 disabled={loading}
               >
-                Cancelar
+                {t('cancelar')}
               </button>
               <button
                 type="submit"
@@ -827,7 +829,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ service, onSave, onCancel, lo
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}
-                {loading ? 'Guardando...' : 'Guardar Servicio'}
+                {loading ? t('guardando') : t('guardar_servicio')}
               </button>
             </div>
           </form>

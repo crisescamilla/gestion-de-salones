@@ -27,6 +27,8 @@ import PhoneInput from "./PhoneInput"
 import { emitEvent, AppEvents } from "../utils/eventManager"
 import { createAppointment, updateAppointment } from '../utils/appointmentsSupabase';
 import { getCurrentTenant } from '../utils/tenantManager';
+import { useTranslation } from 'react-i18next';
+
 
 interface AppointmentFormProps {
   onClose: () => void
@@ -35,6 +37,7 @@ interface AppointmentFormProps {
 }
 
 const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, editingAppointment }) => {
+  const { t } = useTranslation();
   const [clients, setClients] = useState<Client[]>([])
   const [services, setServices] = useState<Service[]>([])
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([])
@@ -278,7 +281,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold" style={{ color: safeColors.text }}>
-              {editingAppointment ? "Editar Cita" : "Nueva Cita"}
+              {editingAppointment ? t('editar_cita') : t('nueva_cita')}
             </h3>
             <button
               onClick={onClose}
@@ -293,7 +296,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
             {/* Cliente */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: safeColors.text }}>
-                Cliente
+                {t('cliente')}
               </label>
               <select
                 value={formData.client_id}
@@ -305,7 +308,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                   color: safeColors.text,
                 }}
               >
-                <option value="">Seleccionar cliente existente</option>
+                <option value="">{t('seleccionar_cliente_existente')}</option>
                 {clients.filter(client => isValidUUID(client.id)).map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.fullName}
@@ -316,12 +319,12 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
               {!formData.client_id && (
                 <div className="mt-4 p-4 border rounded-lg" style={{ borderColor: safeColors.border }}>
                   <h4 className="font-medium mb-3" style={{ color: safeColors.text }}>
-                    O crear nuevo cliente
+                    {t('o_crear_nuevo_cliente')}
                   </h4>
                   <div className="space-y-4">
                     <input
                       type="text"
-                      placeholder="Nombre completo"
+                      placeholder={t('nombre_completo')}
                       value={newClient.fullName}
                       onChange={(e) => setNewClient({ ...newClient, fullName: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg border"
@@ -338,14 +341,14 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                       value={newClient.phone}
                       onChange={(value) => setNewClient({ ...newClient, phone: value })}
                       onValidation={handlePhoneValidation}
-                      placeholder="Número de teléfono"
+                      placeholder={t('numero_telefono')}
                       required
                       showFormatHint={true}
                     />
 
                     <input
                       type="email"
-                      placeholder="Email"
+                      placeholder={t('email')}
                       value={newClient.email}
                       onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
                       className="w-full px-3 py-2 rounded-lg border"
@@ -363,7 +366,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
             {/* Servicios */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: safeColors.text }}>
-                Servicios
+                {t('servicios')}
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {services.map((service) => (
@@ -400,7 +403,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
             {/* Staff Selection */}
             <div>
               <h3 className="text-lg font-medium mb-4 theme-transition" style={{ color: safeColors.text }}>
-                Seleccionar Especialista
+                {t('seleccionar_especialista')}
               </h3>
 
               {formData.service_ids.length === 0 ? (
@@ -412,7 +415,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                   }}
                 >
                   <p className="theme-transition" style={{ color: safeColors.textSecondary }}>
-                    Primero selecciona los servicios para ver los especialistas disponibles
+                    {t('primero_selecciona_servicios')}
                   </p>
                 </div>
               ) : availableStaff.length === 0 ? (
@@ -424,7 +427,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                   }}
                 >
                   <p className="font-medium theme-transition" style={{ color: "#ef4444" }}>
-                    No hay especialistas disponibles para estos servicios
+                    {t('no_especialistas_disponibles')}
                   </p>
                 </div>
               ) : (
@@ -438,10 +441,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                     }}
                   >
                     <h4 className="font-medium theme-transition" style={{ color: safeColors.text }}>
-                      Asignación automática
+                      {t('asignacion_automatica')}
                     </h4>
                     <p className="text-sm theme-transition" style={{ color: safeColors.textSecondary }}>
-                      Se asignará el especialista con menos carga
+                      {t('asignacion_menos_carga')}
                     </p>
                   </div>
 
@@ -502,7 +505,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: safeColors.text }}>
-                  Fecha
+                  {t('fecha')}
                 </label>
                 <input
                   type="date"
@@ -523,7 +526,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
 
               <div>
                 <label className="block text-sm font-medium mb-2" style={{ color: safeColors.text }}>
-                  Hora
+                  {t('hora')}
                 </label>
                 <select
                   value={formData.time}
@@ -539,10 +542,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                 >
                   <option value="">
                     {formData.service_ids.length === 0
-                      ? "Primero selecciona servicios"
+                      ? t('primero_selecciona_servicios')
                       : availableTimeSlots.length === 0
-                        ? "No hay horarios disponibles"
-                        : "Seleccionar hora"}
+                        ? t('no_horarios_disponibles')
+                        : t('seleccionar_hora')}
                   </option>
                   {availableTimeSlots.map((slot) => (
                     <option key={slot} value={slot}>
@@ -554,7 +557,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                 {/* Debug info */}
                 {formData.service_ids.length > 0 && (
                   <p className="text-xs mt-1" style={{ color: safeColors.textSecondary }}>
-                    {availableTimeSlots.length} horarios disponibles
+                    {availableTimeSlots.length} {t('horarios_disponibles')}
                   </p>
                 )}
               </div>
@@ -563,7 +566,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
             {/* Notas */}
             <div>
               <label className="block text-sm font-medium mb-2" style={{ color: safeColors.text }}>
-                Notas (opcional)
+                {t('notas_opcional')}
               </label>
               <textarea
                 value={formData.notes}
@@ -575,7 +578,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                   color: safeColors.text,
                 }}
                 rows={3}
-                placeholder="Notas adicionales sobre la cita..."
+                placeholder={t('notas_placeholder')}
               />
             </div>
 
@@ -592,7 +595,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                 }}
                 disabled={loading}
               >
-                Cancelar
+                {t('cancelar')}
               </button>
               <button
                 type="submit"
@@ -606,7 +609,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({ onClose, onSave, edit
                   !formData.time
                 }
               >
-                {loading ? "Guardando..." : editingAppointment ? "Actualizar Cita" : "Crear Cita"}
+                {loading ? t('guardando') : editingAppointment ? t('actualizar_cita') : t('crear_cita')}
               </button>
             </div>
           </form>

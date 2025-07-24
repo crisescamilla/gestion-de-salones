@@ -28,8 +28,10 @@ import { useTheme } from "../hooks/useTheme"
 import { getCurrentTenant } from "../utils/tenantManager"
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '../utils/supabaseClient';
+import { useTranslation } from 'react-i18next';
 
 const SalonSettings: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [settings, setSettings] = useState<SalonSettingsType>(getSalonSettings())
   const [formData, setFormData] = useState({
     salonName: settings.salonName,
@@ -278,6 +280,20 @@ const SalonSettings: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Language Selector */}
+      <div className="flex justify-end mb-2">
+        <select
+          value={i18n.language}
+          onChange={e => {
+            i18n.changeLanguage(e.target.value);
+            localStorage.setItem('appLanguage', e.target.value);
+          }}
+          className="border rounded px-2 py-1"
+        >
+          <option value="es">Español</option>
+          <option value="en">English</option>
+        </select>
+      </div>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -286,10 +302,10 @@ const SalonSettings: React.FC = () => {
             style={{ color: colors?.text || "#1f2937" }}
           >
             <Settings className="w-8 h-8 mr-3" style={{ color: colors?.accent || "#3b82f6" }} />
-            Configuración del Salón
+            {t('configuracion_salon')}
           </h2>
           <p className="mt-1 theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-            Personaliza la información y configuración de tu salón de belleza
+            {t('personaliza_info')}
           </p>
         </div>
 
@@ -334,9 +350,9 @@ const SalonSettings: React.FC = () => {
         <div className="border-b theme-transition" style={{ borderColor: colors?.border || "#e5e7eb" }}>
           <nav className="flex space-x-8 px-6">
             {[
-              { id: "basic", label: "Información Básica", icon: Edit3 },
-              { id: "contact", label: "Información de Contacto", icon: Phone },
-              { id: "hours", label: "Horarios de Atención", icon: Clock },
+              { id: "basic", label: t('informacion_basica'), icon: Edit3 },
+              { id: "contact", label: t('informacion_contacto'), icon: Phone },
+              { id: "hours", label: t('horarios_atencion'), icon: Clock },
             ].map((tab) => {
               const Icon = tab.icon
               const isActive = activeTab === tab.id
@@ -368,7 +384,7 @@ const SalonSettings: React.FC = () => {
                   className="block text-sm font-medium mb-2 theme-transition"
                   style={{ color: colors?.text || "#1f2937" }}
                 >
-                  Nombre del Salón
+                  {t('nombre_salon')}
                   <span style={{ color: colors?.error || "#ef4444" }} className="ml-1">
                     *
                   </span>
@@ -382,7 +398,7 @@ const SalonSettings: React.FC = () => {
                     type="text"
                     value={formData.salonName}
                     onChange={(e) => handleInputChange("salonName", e.target.value)}
-                    placeholder="Ej: Bella Vita Spa"
+                    placeholder={t('nombre_salon')}
                     maxLength={50}
                     className="w-full pl-10 pr-16 py-3 rounded-lg focus:ring-2 focus:border-transparent transition-all theme-transition"
                     style={{
@@ -413,7 +429,7 @@ const SalonSettings: React.FC = () => {
                   className="block text-sm font-medium mb-2 theme-transition"
                   style={{ color: colors?.text || "#1f2937" }}
                 >
-                  Lema del Salón
+                  {t('lema_salon')}
                   <span style={{ color: colors?.error || "#ef4444" }} className="ml-1">
                     *
                   </span>
@@ -422,7 +438,7 @@ const SalonSettings: React.FC = () => {
                   <textarea
                     value={formData.salonMotto}
                     onChange={(e) => handleInputChange("salonMotto", e.target.value)}
-                    placeholder="Ej: Tu destino de belleza y relajación"
+                    placeholder={t('lema_salon')}
                     maxLength={100}
                     rows={3}
                     className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:border-transparent transition-all resize-none theme-transition"
@@ -454,7 +470,7 @@ const SalonSettings: React.FC = () => {
                   className="block text-sm font-medium mb-2 theme-transition"
                   style={{ color: colors?.text || "#1f2937" }}
                 >
-                  URL del Logo (opcional)
+                  {t('url_logo')}
                 </label>
                 <div className="relative">
                   <input
@@ -472,7 +488,9 @@ const SalonSettings: React.FC = () => {
                   />
                 </div>
                 <p className="text-xs mt-1" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                  Ingresa la URL de tu logo. Para mejores resultados, usa una imagen con fondo transparente.
+                  {i18n.language === 'es'
+                    ? 'Ingresa la URL de tu logo. Para mejores resultados, usa una imagen con fondo transparente.'
+                    : 'Enter your logo URL. For best results, use an image with a transparent background.'}
                 </p>
                 {formData.logo && (
                   <div className="mt-2 p-3 border rounded-lg flex items-center" style={{ borderColor: colors?.border || "#e5e7eb" }}>
@@ -517,7 +535,7 @@ const SalonSettings: React.FC = () => {
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  {loading ? "Guardando..." : "Guardar Cambios"}
+                  {loading ? t('guardando') : t('guardar_cambios')}
                 </button>
               </div>
             </div>
@@ -534,12 +552,12 @@ const SalonSettings: React.FC = () => {
                     style={{ color: colors?.text || "#1f2937" }}
                   >
                     <MapPin className="w-4 h-4 inline mr-1" />
-                    Dirección
+                    {i18n.language === 'es' ? 'Dirección' : 'Address'}
                   </label>
                   <textarea
                     value={formData.address}
                     onChange={(e) => handleInputChange("address", e.target.value)}
-                    placeholder="Ingresa la dirección del salón"
+                    placeholder={i18n.language === 'es' ? 'Ingresa la dirección del salón' : 'Enter the salon address'}
                     className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:border-transparent transition-all theme-transition"
                     style={{
                       border: `1px solid ${colors?.border || "#e5e7eb"}`,
@@ -558,13 +576,13 @@ const SalonSettings: React.FC = () => {
                     style={{ color: colors?.text || "#1f2937" }}
                   >
                     <Phone className="w-4 h-4 inline mr-1" />
-                    Teléfono
+                    {i18n.language === 'es' ? 'Teléfono' : 'Phone'}
                   </label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="664-563-6423"
+                    placeholder={i18n.language === 'es' ? '664-563-6423' : 'Phone number'}
                     className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:border-transparent transition-all theme-transition"
                     style={{
                       border: `1px solid ${colors?.border || "#e5e7eb"}`,
@@ -588,7 +606,7 @@ const SalonSettings: React.FC = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="info@example.com"
+                    placeholder={i18n.language === 'es' ? 'info@ejemplo.com' : 'info@example.com'}
                     className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:border-transparent transition-all theme-transition"
                     style={{
                       border: `1px solid ${colors?.border || "#e5e7eb"}`,
@@ -612,7 +630,7 @@ const SalonSettings: React.FC = () => {
                     type="tel"
                     value={formData.whatsapp}
                     onChange={(e) => handleInputChange("whatsapp", e.target.value)}
-                    placeholder="526645636423"
+                    placeholder={i18n.language === 'es' ? '526645636423' : 'WhatsApp number'}
                     className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:border-transparent transition-all theme-transition"
                     style={{
                       border: `1px solid ${colors?.border || "#e5e7eb"}`,
@@ -630,13 +648,13 @@ const SalonSettings: React.FC = () => {
                     style={{ color: colors?.text || "#1f2937" }}
                   >
                     <Instagram className="w-4 h-4 inline mr-1" />
-                    Instagram (URL completa)
+                    Instagram (URL)
                   </label>
                   <input
                     type="url"
                     value={formData.instagram}
                     onChange={(e) => handleInputChange("instagram", e.target.value)}
-                    placeholder="https://instagram.com/bellavitaspa"
+                    placeholder={i18n.language === 'es' ? 'https://instagram.com/tunegocio' : 'https://instagram.com/yourbusiness'}
                     className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:border-transparent transition-all theme-transition"
                     style={{
                       border: `1px solid ${colors?.border || "#e5e7eb"}`,
@@ -646,7 +664,9 @@ const SalonSettings: React.FC = () => {
                     disabled={loading}
                   />
                   <p className="text-xs mt-1" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                    Ingresa la URL completa, por ejemplo: https://instagram.com/tunegocio
+                    {i18n.language === 'es'
+                      ? 'Ingresa la URL completa, por ejemplo: https://instagram.com/tunegocio'
+                      : 'Enter the full URL, e.g.: https://instagram.com/yourbusiness'}
                   </p>
                 </div>
 
@@ -657,13 +677,13 @@ const SalonSettings: React.FC = () => {
                     style={{ color: colors?.text || "#1f2937" }}
                   >
                     <Facebook className="w-4 h-4 inline mr-1" />
-                    Facebook (URL completa)
+                    Facebook (URL)
                   </label>
                   <input
                     type="url"
                     value={formData.facebook}
                     onChange={(e) => handleInputChange("facebook", e.target.value)}
-                    placeholder="https://facebook.com/bellavitaspa"
+                    placeholder={i18n.language === 'es' ? 'https://facebook.com/tunegocio' : 'https://facebook.com/yourbusiness'}
                     className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:border-transparent transition-all theme-transition"
                     style={{
                       border: `1px solid ${colors?.border || "#e5e7eb"}`,
@@ -673,7 +693,9 @@ const SalonSettings: React.FC = () => {
                     disabled={loading}
                   />
                   <p className="text-xs mt-1" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                    Ingresa la URL completa, por ejemplo: https://facebook.com/tunegocio
+                    {i18n.language === 'es'
+                      ? 'Ingresa la URL completa, por ejemplo: https://facebook.com/tunegocio'
+                      : 'Enter the full URL, e.g.: https://facebook.com/yourbusiness'}
                   </p>
                 </div>
 
@@ -684,13 +706,13 @@ const SalonSettings: React.FC = () => {
                     style={{ color: colors?.text || "#1f2937" }}
                   >
                     <Globe className="w-4 h-4 inline mr-1" />
-                    Sitio Web
+                    {i18n.language === 'es' ? 'Sitio Web' : 'Website'}
                   </label>
                   <input
                     type="url"
                     value={formData.website}
                     onChange={(e) => handleInputChange("website", e.target.value)}
-                    placeholder="https://tu-sitio-web.com"
+                    placeholder={i18n.language === 'es' ? 'https://tu-sitio-web.com' : 'https://your-website.com'}
                     className="w-full px-4 py-3 rounded-lg focus:ring-2 focus:border-transparent transition-all theme-transition"
                     style={{
                       border: `1px solid ${colors?.border || "#e5e7eb"}`,
@@ -718,7 +740,7 @@ const SalonSettings: React.FC = () => {
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  {loading ? "Guardando..." : "Guardar Información de Contacto"}
+                  {loading ? t('guardando') : (i18n.language === 'es' ? 'Guardar Información de Contacto' : 'Save Contact Information')}
                 </button>
               </div>
             </div>
@@ -738,10 +760,12 @@ const SalonSettings: React.FC = () => {
                   <Clock className="w-5 h-5 mr-2 mt-0.5" style={{ color: colors?.warning || "#f59e0b" }} />
                   <div>
                     <h4 className="font-medium theme-transition" style={{ color: colors?.warning || "#f59e0b" }}>
-                      Horarios de Atención
+                      {i18n.language === 'es' ? 'Horarios de Atención' : 'Opening Hours'}
                     </h4>
                     <p className="text-sm mt-1 theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                      Estos horarios se muestran en la página principal para informar a los clientes.
+                      {i18n.language === 'es'
+                        ? 'Estos horarios se muestran en la página principal para informar a los clientes.'
+                        : 'These hours are shown on the main page to inform customers.'}
                     </p>
                   </div>
                 </div>
@@ -760,7 +784,17 @@ const SalonSettings: React.FC = () => {
                     <div className="flex items-center space-x-4">
                       <div className="w-20">
                         <span className="font-medium theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                          {getDayName(day)}
+                          {i18n.language === 'es'
+                            ? getDayName(day)
+                            : {
+                                monday: 'Monday',
+                                tuesday: 'Tuesday',
+                                wednesday: 'Wednesday',
+                                thursday: 'Thursday',
+                                friday: 'Friday',
+                                saturday: 'Saturday',
+                                sunday: 'Sunday',
+                              }[day]}
                         </span>
                       </div>
                       <label className="flex items-center">
@@ -772,7 +806,7 @@ const SalonSettings: React.FC = () => {
                           style={{ accentColor: colors?.accent || "#3b82f6" }}
                         />
                         <span className="ml-2 text-sm theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                          Abierto
+                          {i18n.language === 'es' ? 'Abierto' : 'Open'}
                         </span>
                       </label>
                     </div>
@@ -804,7 +838,7 @@ const SalonSettings: React.FC = () => {
                       </div>
                     ) : (
                       <span className="font-medium theme-transition" style={{ color: colors?.error || "#ef4444" }}>
-                        Cerrado
+                        {i18n.language === 'es' ? 'Cerrado' : 'Closed'}
                       </span>
                     )}
                   </div>
@@ -819,18 +853,28 @@ const SalonSettings: React.FC = () => {
                 }}
               >
                 <h4 className="font-medium mb-2 theme-transition" style={{ color: colors?.success || "#10b981" }}>
-                  Vista Previa de Horarios
+                  {i18n.language === 'es' ? 'Vista Previa de Horarios' : 'Hours Preview'}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                   {orderedDays.map((day) => (
                     <div key={day} className="flex justify-between">
                       <span className="font-medium theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                        {getDayName(day)}:
+                        {i18n.language === 'es'
+                          ? getDayName(day)
+                          : {
+                              monday: 'Monday',
+                              tuesday: 'Tuesday',
+                              wednesday: 'Wednesday',
+                              thursday: 'Thursday',
+                              friday: 'Friday',
+                              saturday: 'Saturday',
+                              sunday: 'Sunday',
+                            }[day]}:
                       </span>
                       <span className="theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
                         {hours[day as keyof typeof hours].isOpen 
                           ? `${hours[day as keyof typeof hours].open} - ${hours[day as keyof typeof hours].close}` 
-                          : "Cerrado"}
+                          : (i18n.language === 'es' ? 'Cerrado' : 'Closed')}
                       </span>
                     </div>
                   ))}
@@ -855,7 +899,7 @@ const SalonSettings: React.FC = () => {
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}
-                {loading ? "Guardando..." : "Guardar Horarios"}
+                {loading ? t('guardando') : (i18n.language === 'es' ? 'Guardar Horarios' : 'Save Hours')}
               </button>
             </div>
           )}
@@ -871,12 +915,12 @@ const SalonSettings: React.FC = () => {
         }}
       >
         <h3 className="text-lg font-semibold mb-4 theme-transition" style={{ color: colors?.accent || "#3b82f6" }}>
-          Vista Previa Actual
+          {t('vista_previa_actual')}
         </h3>
         <div className="space-y-3">
           <div>
             <span className="text-sm font-medium theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-              Nombre:
+              {t('nombre_salon')}:
             </span>
             <p className="text-xl font-bold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
               {settings.salonName}
@@ -884,7 +928,7 @@ const SalonSettings: React.FC = () => {
           </div>
           <div>
             <span className="text-sm font-medium theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-              Lema:
+              {t('lema_salon')}:
             </span>
             <p className="italic theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
               "{settings.salonMotto}"
@@ -895,7 +939,7 @@ const SalonSettings: React.FC = () => {
               Instagram:
             </span>
             <p className="theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-              {settings.instagram || "No configurado"}
+              {settings.instagram || (i18n.language === 'es' ? 'No configurado' : 'Not set')}
             </p>
           </div>
           <div>
@@ -903,15 +947,17 @@ const SalonSettings: React.FC = () => {
               Facebook:
             </span>
             <p className="theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-              {settings.facebook || "No configurado"}
+              {settings.facebook || (i18n.language === 'es' ? 'No configurado' : 'Not set')}
             </p>
           </div>
           <div>
             <span className="text-sm font-medium theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-              Domingo:
+              {i18n.language === 'es' ? 'Domingo' : 'Sunday'}:
             </span>
             <p className="theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-              {settings.hours?.sunday?.isOpen ? `${settings.hours.sunday.open} - ${settings.hours.sunday.close}` : "Cerrado"}
+              {settings.hours?.sunday?.isOpen
+                ? `${settings.hours.sunday.open} - ${settings.hours.sunday.close}`
+                : (i18n.language === 'es' ? 'Cerrado' : 'Closed')}
             </p>
           </div>
           <div
@@ -921,7 +967,9 @@ const SalonSettings: React.FC = () => {
               borderColor: `${colors?.accent || "#3b82f6"}33`,
             }}
           >
-            Última actualización: {new Date(settings.updatedAt).toLocaleString("es-ES")} por {settings.updatedBy}
+            {i18n.language === 'es'
+              ? `Última actualización: ${new Date(settings.updatedAt).toLocaleString('es-ES')} por ${settings.updatedBy}`
+              : `Last update: ${new Date(settings.updatedAt).toLocaleString('en-US')} by ${settings.updatedBy}`}
           </div>
         </div>
       </div>

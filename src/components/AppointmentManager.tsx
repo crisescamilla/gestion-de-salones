@@ -36,8 +36,11 @@ import { getClientsFromSupabase } from "../utils/clientsSupabase";
 import { getCurrentTenant } from "../utils/tenantManager";
 import { getAppointments as getAppointmentsSupabase, deleteAppointment as deleteAppointmentSupabase, updateAppointment } from '../utils/appointmentsSupabase';
 import { updateClientInSupabase } from '../utils/clientsSupabase';
+import { useTranslation } from 'react-i18next';
+
 
 const AppointmentManager: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [services, setServices] = useState<Service[]>([])
@@ -74,7 +77,7 @@ const AppointmentManager: React.FC = () => {
       loadData()
       setLastUpdate(new Date())
       setNewAppointmentCount((prev) => prev + 1)
-      showNotification("Nueva cita creada", "success")
+      showNotification(t('nueva_cita_creada'), "success")
     }
 
     const handleAppointmentUpdated = (eventData: any) => {
@@ -87,7 +90,7 @@ const AppointmentManager: React.FC = () => {
       console.log("🗑️ Cita eliminada:", eventData)
       loadData()
       setLastUpdate(new Date())
-      showNotification("Cita eliminada", "warning")
+      showNotification(t('cita_eliminada'), "warning")
     }
 
     const handleClientCreated = (eventData: any) => {
@@ -164,7 +167,7 @@ const AppointmentManager: React.FC = () => {
       })
     } catch (error) {
       console.error("Error loading data:", error)
-      showNotification("Error al cargar datos", "error")
+      showNotification(t('error_cargar_datos'), "error")
     }
   }
 
@@ -199,7 +202,7 @@ const AppointmentManager: React.FC = () => {
     setShowDebugInfo(true)
 
     const issuesCount = results.filter((r) => r.issues.length > 0).length
-    showNotification(`Debug completado: ${issuesCount} citas con problemas`, issuesCount > 0 ? "warning" : "success")
+    showNotification(t('debug_completado', { count: issuesCount }), issuesCount > 0 ? "warning" : "success")
   }
 
   const handleRepairStaffAssignments = () => {
@@ -208,9 +211,9 @@ const AppointmentManager: React.FC = () => {
 
     if (repairedCount > 0) {
       loadData() // Recargar datos después de reparar
-      showNotification(`Reparadas ${repairedCount} asignaciones`, "success")
+      showNotification(t('reparadas_asignaciones', { count: repairedCount }), "success")
     } else {
-      showNotification("No se encontraron problemas para reparar", "info")
+      showNotification(t('no_problemas_reparar'), "info")
     }
   }
 
@@ -271,22 +274,22 @@ const AppointmentManager: React.FC = () => {
           isStatusUpdate: true,
           changedBy: "Administrador",
         });
-        showNotification("Estado actualizado", "success");
+        showNotification(t('estado_actualizado'), "success");
         loadData();
       }
     } catch (error) {
       console.error("Error updating appointment status:", error);
-      showNotification("Error al actualizar estado", "error");
+      showNotification(t('error_actualizar_estado'), "error");
     }
   }
 
   const handleDeleteAppointment = async (appointmentId: string) => {
     try {
       await deleteAppointmentSupabase(appointmentId);
-      showNotification("Cita eliminada", "warning");
+      showNotification(t('cita_eliminada'), "warning");
       loadData();
     } catch (error) {
-      showNotification("Error al eliminar cita", "error");
+      showNotification(t('error_eliminar_cita'), "error");
     }
   }
 
@@ -310,7 +313,7 @@ const AppointmentManager: React.FC = () => {
     loadData()
     setLastUpdate(new Date())
     setNewAppointmentCount(0)
-    showNotification("Datos actualizados", "info")
+    showNotification(t('datos_actualizados'), "info")
   }
 
   return (
@@ -354,7 +357,7 @@ const AppointmentManager: React.FC = () => {
         <div>
           <div className="flex items-center">
             <h1 className="text-xl font-bold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-              Gestión de Citas
+              {t('gestion_citas')}
             </h1>
             {newAppointmentCount > 0 && (
               <div
@@ -364,7 +367,7 @@ const AppointmentManager: React.FC = () => {
                   color: colors?.success || "#10b981",
                 }}
               >
-                +{newAppointmentCount} nueva{newAppointmentCount !== 1 ? "s" : ""}
+                +{t(newAppointmentCount === 1 ? 'nueva' : 'nuevas', { count: newAppointmentCount })}
               </div>
             )}
             {isConnected && (
@@ -374,27 +377,27 @@ const AppointmentManager: React.FC = () => {
                   style={{ backgroundColor: colors?.success || "#10b981" }}
                 ></div>
                 <span className="text-xs font-medium" style={{ color: colors?.success || "#10b981" }}>
-                  EN VIVO
+                  {t('en_vivo')}
                 </span>
               </div>
             )}
           </div>
           <div className="flex items-center mt-1">
             <p className="theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-              Administra las citas de tu salón
+              {t('administra_citas')}
             </p>
             <div className="ml-4 flex items-center text-xs">
               <Activity className="w-3 h-3 mr-1" style={{ color: colors?.textSecondary || "#6b7280" }} />
               <span style={{ color: colors?.textSecondary || "#6b7280" }}>
-                Actualizado: {lastUpdate.toLocaleTimeString("es-ES")}
+                {t('actualizado')}: {lastUpdate.toLocaleTimeString(i18n.language === 'es' ? 'es-ES' : 'en-US')}
               </span>
             </div>
           </div>
           <div className="mt-2 text-sm" style={{ color: colors?.textSecondary || "#6b7280" }}>
-            📅 Mostrando citas para: <strong>{formatDateSpanish(selectedDate)}</strong> ({selectedDate})
+            📅 {t('mostrando_citas_para')}: <strong>{formatDateSpanish(selectedDate)}</strong> ({selectedDate})
           </div>
           <div className="mt-1 text-xs" style={{ color: colors?.textSecondary || "#6b7280" }}>
-            👥 Staff cargado: {staffMembers.length} especialistas
+            👥 {t('staff_cargado', { count: staffMembers.length })}
           </div>
         </div>
         <div className="flex items-center space-x-3">
@@ -406,7 +409,7 @@ const AppointmentManager: React.FC = () => {
               backgroundColor: colors?.warning ? `${colors.warning}1a` : "#f59e0b1a",
               color: colors?.warning || "#f59e0b",
             }}
-            title="Diagnosticar problemas"
+            title={t('diagnosticar_problemas')}
           >
             <Bug className="w-4 h-4" />
           </button>
@@ -418,7 +421,7 @@ const AppointmentManager: React.FC = () => {
               backgroundColor: colors?.info ? `${colors.info}1a` : "#06b6d41a",
               color: colors?.info || "#06b6d4",
             }}
-            title="Reparar asignaciones"
+            title={t('reparar_asignaciones')}
           >
             <Wrench className="w-4 h-4" />
           </button>
@@ -430,7 +433,7 @@ const AppointmentManager: React.FC = () => {
               backgroundColor: colors?.background || "#f8fafc",
               color: colors?.textSecondary || "#6b7280",
             }}
-            title="Actualizar manualmente"
+            title={t('actualizar_manual')}
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -443,7 +446,7 @@ const AppointmentManager: React.FC = () => {
             }}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Nueva Cita
+            {t('nueva_cita')}
           </button>
         </div>
       </div>
@@ -459,7 +462,7 @@ const AppointmentManager: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium" style={{ color: colors?.text || "#1f2937" }}>
-              🔍 Información de Debugging
+              🔍 {t('informacion_debugging')}
             </h3>
             <button onClick={() => setShowDebugInfo(false)} className="text-gray-400 hover:text-gray-600">
               ×
@@ -468,25 +471,24 @@ const AppointmentManager: React.FC = () => {
 
           <div className="space-y-2 text-sm">
             <div>
-              <strong>Total de citas:</strong> {debugResults.length}
+              <strong>{t('total_citas')}:</strong> {debugResults.length}
             </div>
             <div>
-              <strong>Citas con problemas:</strong> {debugResults.filter((r) => r.issues.length > 0).length}
+              <strong>{t('citas_con_problemas')}:</strong> {debugResults.filter((r) => r.issues.length > 0).length}
             </div>
             <div>
-              <strong>Citas sin especialista:</strong>{" "}
-              {debugResults.filter((r) => !r.staff && r.appointment.staff_id).length}
+              <strong>{t('citas_sin_especialista')}:</strong> {debugResults.filter((r) => !r.staff && r.appointment.staff_id).length}
             </div>
 
             {debugResults.filter((r) => r.issues.length > 0).length > 0 && (
               <div className="mt-4">
-                <strong>Problemas encontrados:</strong>
+                <strong>{t('problemas_encontrados')}:</strong>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   {debugResults
                     .filter((r) => r.issues.length > 0)
                     .map((result, index) => (
                       <li key={index} className="text-red-600">
-                        Cita {result.appointment.id}: {result.issues.join(", ")}
+                        {t('nueva_cita')} {result.appointment.id}: {result.issues.join(", ")}
                       </li>
                     ))}
                 </ul>
@@ -505,7 +507,7 @@ const AppointmentManager: React.FC = () => {
           />
           <input
             type="text"
-            placeholder="Buscar citas..."
+            placeholder={t('buscar_citas')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-lg border theme-transition focus:ring-2 focus:ring-opacity-50"
@@ -553,11 +555,11 @@ const AppointmentManager: React.FC = () => {
               color: colors?.text || "#1f2937",
             }}
           >
-            <option value="all">Todos los estados</option>
-            <option value="confirmed">Confirmadas</option>
-            <option value="pending">Pendientes</option>
-            <option value="completed">Completadas</option>
-            <option value="cancelled">Canceladas</option>
+            <option value="all">{t('todos_los_estados')}</option>
+            <option value="confirmed">{t('confirmadas')}</option>
+            <option value="pending">{t('pendientes')}</option>
+            <option value="completed">{t('completadas')}</option>
+            <option value="cancelled">{t('canceladas')}</option>
           </select>
         </div>
 
@@ -566,7 +568,7 @@ const AppointmentManager: React.FC = () => {
           style={{ backgroundColor: colors?.surface || "#ffffff" }}
         >
           <span className="text-sm font-medium theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-            {filteredAppointments.length} citas
+            {filteredAppointments.length} {t('citas')}
           </span>
         </div>
       </div>
@@ -583,16 +585,16 @@ const AppointmentManager: React.FC = () => {
               style={{ color: colors?.textSecondary || "#6b7280" }}
             />
             <h3 className="text-lg font-medium mb-2 theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-              No hay citas para esta fecha
+              {t('no_hay_citas')}
             </h3>
             <p className="theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-              Selecciona otra fecha o crea una nueva cita
+              {t('selecciona_otra_fecha')}
             </p>
             <div className="mt-4 text-sm" style={{ color: colors?.textSecondary || "#6b7280" }}>
-              <p>Fecha seleccionada: {selectedDate}</p>
-              <p>Total de citas en el sistema: {appointments.length}</p>
+              <p>{t('fecha_seleccionada')}: {selectedDate}</p>
+              <p>{t('total_citas_sistema')}: {appointments.length}</p>
               <p>
-                Fechas con citas:{" "}
+                {t('fechas_con_citas')}: {" "}
                 {[...new Set(appointments.map((apt) => apt.date))]
                   .sort()
                   .map((date) => `${date} (${appointments.filter((apt) => apt.date === date).length})`)
@@ -633,7 +635,7 @@ const AppointmentManager: React.FC = () => {
                           style={{ color: colors?.primary || "#0ea5e9" }}
                         />
                         <span className="font-medium theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                          {client?.fullName || "Cliente no encontrado"}
+                          {client?.fullName || t('cliente_no_encontrado')}
                         </span>
                         {client && (
                           <button
@@ -643,7 +645,7 @@ const AppointmentManager: React.FC = () => {
                             }}
                             className="ml-2 p-1 rounded transition-colors theme-transition"
                             style={{ color: colors?.info || "#3b82f6", backgroundColor: `${colors?.info || "#3b82f6"}0d` }}
-                            title="Editar cliente"
+                            title={t('editar_cliente')}
                           >
                             <Edit className="w-4 h-4" />
                           </button>
@@ -672,7 +674,7 @@ const AppointmentManager: React.FC = () => {
                     {/* Service & Staff */}
                     <div className="space-y-1">
                       <div className="font-medium theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                        {appointmentServices.map((s) => s.name).join(", ") || "Servicios no encontrados"}
+                        {appointmentServices.map((s) => s.name).join(", ") || t('servicios_no_encontrados')}
                       </div>
 
                       <div className="space-y-1">
@@ -700,14 +702,14 @@ const AppointmentManager: React.FC = () => {
                           </div>
                         ) : appointment.staff_id ? (
                           <div className="text-sm">
-                            <span style={{ color: colors?.error || "#ef4444" }}>⚠ Especialista no encontrado</span>
+                            <span style={{ color: colors?.error || "#ef4444" }}>{t('especialista_no_encontrado')}</span>
                             <div className="text-xs" style={{ color: colors?.textSecondary || "#6b7280" }}>
                               ID: {appointment.staff_id}
                             </div>
                           </div>
                         ) : (
                           <div className="text-sm" style={{ color: colors?.warning || "#f59e0b" }}>
-                            Sin especialista asignado
+                            {t('sin_especialista')}
                           </div>
                         )}
                       </div>
@@ -741,10 +743,10 @@ const AppointmentManager: React.FC = () => {
                         <span
                           className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}
                         >
-                          {appointment.status === "confirmed" && "Confirmada"}
-                          {appointment.status === "pending" && "Pendiente"}
-                          {appointment.status === "cancelled" && "Cancelada"}
-                          {appointment.status === "completed" && "Completada"}
+                          {appointment.status === "confirmed" && t('confirmada')}
+                          {appointment.status === "pending" && t('pendiente')}
+                          {appointment.status === "cancelled" && t('cancelada')}
+                          {appointment.status === "completed" && t('completada')}
                         </span>
                       </div>
                       {appointment.notes && (
@@ -767,10 +769,10 @@ const AppointmentManager: React.FC = () => {
                         color: colors?.text || "#1f2937",
                       }}
                     >
-                      <option value="pending">Pendiente</option>
-                      <option value="confirmed">Confirmada</option>
-                      <option value="completed">Completada</option>
-                      <option value="cancelled">Cancelada</option>
+                      <option value="pending">{t('pendiente')}</option>
+                      <option value="confirmed">{t('confirmada')}</option>
+                      <option value="completed">{t('completada')}</option>
+                      <option value="cancelled">{t('cancelada')}</option>
                     </select>
 
                     <button
@@ -811,23 +813,23 @@ const AppointmentManager: React.FC = () => {
       {editingClient && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold mb-4">Editar Cliente</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('editar_cliente')}</h3>
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
                 try {
                   await updateClientInSupabase(editingClient.id, clientEditForm);
-                  showNotification('Cliente actualizado', 'success');
+                  showNotification(t('cliente_actualizado'), 'success');
                   setEditingClient(null);
                   loadData();
                 } catch (error) {
-                  showNotification('Error al actualizar cliente', 'error');
+                  showNotification(t('error_actualizar_cliente'), 'error');
                 }
               }}
               className="space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium mb-1">Teléfono</label>
+                <label className="block text-sm font-medium mb-1">{t('telefono')}</label>
                 <input
                   type="text"
                   value={clientEditForm.phone}
@@ -837,7 +839,7 @@ const AppointmentManager: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Correo electrónico</label>
+                <label className="block text-sm font-medium mb-1">{t('correo_electronico')}</label>
                 <input
                   type="email"
                   value={clientEditForm.email}
@@ -852,13 +854,13 @@ const AppointmentManager: React.FC = () => {
                   onClick={() => setEditingClient(null)}
                   className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
                 >
-                  Cancelar
+                  {t('cancelar')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
                 >
-                  Guardar
+                  {t('guardar')}
                 </button>
               </div>
             </form>

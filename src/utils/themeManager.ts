@@ -177,8 +177,8 @@ const darkenColor = (color: string, amount: number): string => {
 export const themePresets: ThemePreset[] = [
   {
     id: 'default',
-    name: 'Personalizado (Predeterminado)',
-    description: 'Tema basado en los colores de tu marca',
+    name: 'theme_default_name',
+    description: 'theme_default_desc',
     preview: 'linear-gradient(135deg, #0ea5e9, #06b6d4)',
     colors: {
       primary: '#0ea5e9',
@@ -204,8 +204,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'colorblind-friendly',
-    name: '♿ Accesible para Daltonismo',
-    description: 'Colores especialmente seleccionados para ser distinguibles por personas con daltonismo',
+    name: 'theme_colorblind_friendly_name',
+    description: 'theme_colorblind_friendly_desc',
     preview: 'linear-gradient(135deg, #0066cc, #ff6600)',
     colors: {
       primary: '#0066cc',           // Azul fuerte (distinguible para todos los tipos de daltonismo)
@@ -231,8 +231,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'rose-gold',
-    name: 'Rosa Dorado',
-    description: 'Elegante combinación de rosa y dorado, perfecta para salones de belleza',
+    name: 'theme_rose_gold_name',
+    description: 'theme_rose_gold_desc',
     preview: 'linear-gradient(135deg, #f43f5e, #f59e0b)',
     colors: {
       primary: '#f43f5e',           // Rosa vibrante
@@ -258,8 +258,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'lavender-dream',
-    name: 'Sueño Lavanda',
-    description: 'Suaves tonos púrpura y lavanda para un ambiente relajante',
+    name: 'theme_lavender_dream_name',
+    description: 'theme_lavender_dream_desc',
     preview: 'linear-gradient(135deg, #3b82f6, #a78bfa)',
     colors: {
       primary: '#3b82f6',           // Púrpura
@@ -285,8 +285,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'ocean-breeze',
-    name: 'Brisa Marina',
-    description: 'Frescos azules y turquesas inspirados en el océano',
+    name: 'theme_ocean_breeze_name',
+    description: 'theme_ocean_breeze_desc',
     preview: 'linear-gradient(135deg, #0ea5e9, #06b6d4)',
     colors: {
       primary: '#0ea5e9',           // Azul cielo
@@ -312,8 +312,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'emerald-luxury',
-    name: 'Lujo Esmeralda',
-    description: 'Sofisticados verdes esmeralda con toques dorados',
+    name: 'theme_emerald_luxury_name',
+    description: 'theme_emerald_luxury_desc',
     preview: 'linear-gradient(135deg, #10b981, #059669)',
     colors: {
       primary: '#10b981',           // Verde esmeralda
@@ -366,8 +366,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'midnight-elegance',
-    name: 'Elegancia Nocturna',
-    description: 'Sofisticados tonos oscuros con acentos dorados',
+    name: 'theme_midnight_elegance_name',
+    description: 'theme_midnight_elegance_desc',
     preview: 'linear-gradient(135deg, #1f2937, #374151)',
     colors: {
       primary: '#374151',           // Gris oscuro
@@ -393,8 +393,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'cherry-blossom',
-    name: 'Flor de Cerezo',
-    description: 'Delicados rosas y blancos inspirados en las flores de cerezo',
+    name: 'theme_cherry_blossom_name',
+    description: 'theme_cherry_blossom_desc',
     preview: 'linear-gradient(135deg, #fda4af, #f9a8d4)',
     colors: {
       primary: '#fda4af',           // Rosa suave
@@ -420,8 +420,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'forest-spa',
-    name: 'Spa del Bosque',
-    description: 'Naturales verdes y marrones para un ambiente zen',
+    name: 'theme_forest_spa_name',
+    description: 'theme_forest_spa_desc',
     preview: 'linear-gradient(135deg, #16a34a, #15803d)',
     colors: {
       primary: '#16a34a',           // Verde bosque
@@ -447,8 +447,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'royal-blue',
-    name: 'Púrpura Real',
-    description: 'Majestuosos púrpuras con toques plateados para máxima elegancia',
+    name: 'theme_royal_blue_name',
+    description: 'theme_royal_blue_desc',
     preview: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
     colors: {
       primary: '#7c3aed',           // Púrpura real
@@ -474,8 +474,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'coral-reef',
-    name: 'Arrecife de Coral',
-    description: 'Vibrantes corales y turquesas inspirados en la vida marina',
+    name: 'theme_coral_reef_name',
+    description: 'theme_coral_reef_desc',
     preview: 'linear-gradient(135deg, #ff7849, #06b6d4)',
     colors: {
       primary: '#ff7849',           // Coral
@@ -501,8 +501,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'neutral-professional',
-    name: 'Profesional Neutro',
-    description: 'Paleta neutra y versátil para cualquier tipo de negocio de belleza',
+    name: 'theme_neutral_professional_name',
+    description: 'theme_neutral_professional_desc',
     preview: 'linear-gradient(135deg, #6b7280, #9ca3af)',
     colors: {
       primary: '#6b7280',           // Gris medio profesional
@@ -528,8 +528,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'barber-classic',
-    name: 'Barbería Clásica',
-    description: 'Azules y grises sobrios inspirados en barberías tradicionales',
+    name: 'theme_barber_classic_name',
+    description: 'theme_barber_classic_desc',
     preview: 'linear-gradient(135deg, #22304a, #b0b7bd)',
     colors: {
       primary: '#22304a',           // Azul oscuro
@@ -555,8 +555,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'urban-night',
-    name: 'Noche Urbana',
-    description: 'Negros y dorados para un look masculino y elegante',
+    name: 'theme_urban_night_name',
+    description: 'theme_urban_night_desc',
     preview: 'linear-gradient(135deg, #18181b, #f59e0b)',
     colors: {
       primary: '#18181b',           // Negro profundo
@@ -582,8 +582,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'steel-blue',
-    name: 'Acero Azul',
-    description: 'Azules acero y plateados para un estilo masculino moderno',
+    name: 'theme_steel_blue_name',
+    description: 'theme_steel_blue_desc',
     preview: 'linear-gradient(135deg, #1e293b, #64748b)',
     colors: {
       primary: '#1e293b',           // Azul acero oscuro
@@ -636,8 +636,8 @@ export const themePresets: ThemePreset[] = [
   },
   {
     id: 'autism-friendly',
-    name: 'Amigable Autismo',
-    description: 'Colores suaves y calmantes, sin contrastes agresivos, para reducir la sobrecarga sensorial. Ideal para personas con autismo o sensibilidad sensorial.',
+    name: 'theme_autism_friendly_name',
+    description: 'theme_autism_friendly_desc',
     preview: 'linear-gradient(135deg, #a7c7e7, #b7e4c7)',
     colors: {
       primary: '#a7c7e7',           // Azul pastel suave

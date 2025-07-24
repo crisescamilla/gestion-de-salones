@@ -25,6 +25,8 @@ import { saveStaffMember, deleteStaffMember, repairTenantStaffData } from '../ut
 import { handleStaffDeletion } from '../utils/staffIntegrity';
 import { getCurrentTenant } from '../utils/tenantManager';
 import { v4 as uuidv4 } from 'uuid';
+import { useTranslation } from 'react-i18next';
+
 
 const StaffManager: React.FC = () => {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
@@ -38,6 +40,8 @@ const StaffManager: React.FC = () => {
   const [showRepairTools, setShowRepairTools] = useState(false);
   const [repairLoading, setRepairLoading] = useState(false);
   
+  const { t } = useTranslation();
+
   const { colors } = useTheme();
   const { staff, loading: staffLoading, refreshData } = useStaffData();
   const currentTenant = getCurrentTenant();
@@ -61,13 +65,13 @@ const StaffManager: React.FC = () => {
     try {
       // Validar que specialties no esté vacío
       if (!staffData.specialties || staffData.specialties.length === 0) {
-        setMessage({ type: 'error', text: 'Debes seleccionar al menos una especialidad.' });
+        setMessage({ type: 'error', text: t('selecciona_al_menos_una_especialidad') });
         setLoading(false);
         return;
       }
       // Validar que schedule sea un objeto
       if (!staffData.schedule || typeof staffData.schedule !== 'object') {
-        setMessage({ type: 'error', text: 'El horario es inválido.' });
+        setMessage({ type: 'error', text: t('horario_invalido') });
         setLoading(false);
         return;
       }
@@ -84,24 +88,24 @@ const StaffManager: React.FC = () => {
       // Guardar primero en Supabase
       const supabaseResult = await saveStaffMember(newStaff, currentTenant?.id);
       if (!supabaseResult.ok) {
-        setMessage({ type: 'error', text: supabaseResult.errorMsg || 'Error al guardar en Supabase. Verifica tu conexión o los datos.' });
+        setMessage({ type: 'error', text: supabaseResult.errorMsg || t('error_guardar_especialista') });
         setLoading(false);
         return;
       }
-      setMessage({ type: 'success', text: isNew ? 'Empleado creado exitosamente' : 'Empleado actualizado exitosamente' });
+      setMessage({ type: 'success', text: t('especialista_guardado') });
       refreshData();
       setEditingStaff(null);
       setShowAddForm(false);
     } catch (error) {
       console.error('Error saving staff:', error);
-      setMessage({ type: 'error', text: 'Error al guardar empleado. Revisa los datos e inténtalo de nuevo.' });
+      setMessage({ type: 'error', text: t('error_guardar_especialista') });
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteStaff = async (staffMember: StaffMember) => {
-    if (window.confirm(`¿Estás seguro de que deseas eliminar a ${staffMember.name}?`)) {
+    if (window.confirm(t('confirmar_eliminar_especialista', { name: staffMember.name }))) {
       setLoading(true);
       try {
         // Handle staff deletion with integrity checks
@@ -112,15 +116,15 @@ const StaffManager: React.FC = () => {
           deleteStaffMember(staffMember.id, currentTenant?.id);
           setMessage({ 
             type: 'success', 
-            text: result.message
+            text: t('especialista_eliminado')
           });
           refreshData();
         } else {
-          setMessage({ type: 'error', text: result.message });
+          setMessage({ type: 'error', text: t('error_eliminar_especialista') });
         }
       } catch (error) {
         console.error('Error deleting staff:', error);
-        setMessage({ type: 'error', text: 'Error al eliminar empleado' });
+        setMessage({ type: 'error', text: t('error_eliminar_especialista') });
       } finally {
         setLoading(false);
       }
@@ -130,24 +134,24 @@ const StaffManager: React.FC = () => {
   // Función para reparar datos de personal
   const handleRepairStaffData = async () => {
     if (!currentTenant) {
-      setMessage({ type: 'error', text: 'No hay negocio seleccionado' });
+      setMessage({ type: 'error', text: t('no_negocio_seleccionado') });
       return;
     }
     
-    if (window.confirm(`¿Estás seguro de que deseas reparar los datos de personal para ${currentTenant.name}? Esto reiniciará el personal a los datos por defecto.`)) {
+    if (window.confirm(t('confirmar_reparar_personal', { name: currentTenant.name }))) {
       setRepairLoading(true);
       try {
         const success = repairTenantStaffData(currentTenant.id);
         
         if (success) {
-          setMessage({ type: 'success', text: 'Datos de personal reparados exitosamente' });
+          setMessage({ type: 'success', text: t('personal_reparado') });
           refreshData();
         } else {
-          setMessage({ type: 'error', text: 'Error al reparar datos de personal' });
+          setMessage({ type: 'error', text: t('error_reparar_personal') });
         }
       } catch (error) {
         console.error('Error repairing staff data:', error);
-        setMessage({ type: 'error', text: 'Error al reparar datos de personal' });
+        setMessage({ type: 'error', text: t('error_reparar_personal') });
       } finally {
         setRepairLoading(false);
       }
@@ -181,17 +185,17 @@ const StaffManager: React.FC = () => {
             style={{ color: colors?.text || '#1f2937' }}
           >
             <UserCog className="w-8 h-8 mr-3" style={{ color: colors?.accent || '#3b82f6' }} />
-            Gestión de Personal
+            {t('gestion_personal')}
           </h2>
           <p 
             className="mt-1 theme-transition"
             style={{ color: colors?.textSecondary || '#6b7280' }}
           >
-            Administra el equipo de especialistas de tu salón
+            {t('administra_personal')}
           </p>
           {currentTenant && (
             <p className="text-sm mt-1" style={{ color: colors?.primary || '#0ea5e9' }}>
-              Negocio: {currentTenant.name}
+              {t('negocio')}: {currentTenant.name}
             </p>
           )}
         </div>
@@ -204,7 +208,7 @@ const StaffManager: React.FC = () => {
               backgroundColor: colors?.warning ? `${colors.warning}1a` : '#f59e0b1a',
               color: colors?.warning || '#f59e0b',
             }}
-            title="Herramientas de reparación"
+            title={t('herramientas_reparacion')}
           >
             <Wrench className="w-4 h-4" />
           </button>
@@ -216,7 +220,7 @@ const StaffManager: React.FC = () => {
               backgroundColor: colors?.background || '#f8fafc',
               color: colors?.textSecondary || '#6b7280',
             }}
-            title="Actualizar datos"
+            title={t('actualizar_datos')}
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -227,7 +231,7 @@ const StaffManager: React.FC = () => {
             style={{ backgroundColor: colors?.accent || '#3b82f6' }}
           >
             <Plus className="w-4 h-4 mr-2" />
-            Agregar Especialista
+            {t('agregar_especialista')}
           </button>
         </div>
       </div>
@@ -279,7 +283,7 @@ const StaffManager: React.FC = () => {
               style={{ color: colors?.warning || '#f59e0b' }}
             >
               <Wrench className="w-5 h-5 mr-2" />
-              Herramientas de Reparación
+              {t('herramientas_reparacion')}
             </h3>
             <button
               onClick={() => setShowRepairTools(false)}
@@ -292,7 +296,7 @@ const StaffManager: React.FC = () => {
           <div className="space-y-4">
             <div className="bg-white bg-opacity-50 p-4 rounded-lg">
               <p className="text-sm mb-4" style={{ color: colors?.text || '#1f2937' }}>
-                Estas herramientas te permiten reparar problemas con los datos de personal. Úsalas con precaución.
+                {t('herramientas_reparacion_descripcion')}
               </p>
               
               <div className="flex flex-wrap gap-4">
@@ -306,13 +310,13 @@ const StaffManager: React.FC = () => {
                   ) : (
                     <Wrench className="w-4 h-4 mr-2" />
                   )}
-                  Reiniciar Personal
+                  {t('reiniciar_personal')}
                 </button>
               </div>
               
               <div className="mt-4 text-xs text-gray-500">
-                <p><strong>Nota:</strong> Reiniciar personal restaurará los datos por defecto para este negocio.</p>
-                <p>Tenant ID: {currentTenant?.id || "No hay negocio seleccionado"}</p>
+                <p><strong>{t('nota_reparacion')}:</strong> {t('reiniciar_personal_descripcion')}</p>
+                <p>{t('tenant_id')}: {currentTenant?.id || t('no_negocio_seleccionado')}</p>
               </div>
             </div>
           </div>
@@ -328,7 +332,7 @@ const StaffManager: React.FC = () => {
           />
           <input
             type="text"
-            placeholder="Buscar personal..."
+            placeholder={t('buscar_personal')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2 rounded-lg focus:ring-2 focus:border-transparent theme-transition"
@@ -355,7 +359,7 @@ const StaffManager: React.FC = () => {
               color: colors?.text || '#1f2937'
             }}
           >
-            <option value="all">Todas las especialidades</option>
+            <option value="all">{t('todas_especialidades')}</option>
             {serviceCategories.map(category => (
               <option key={category.id} value={category.id}>
                 {category.name}
@@ -379,9 +383,9 @@ const StaffManager: React.FC = () => {
               color: colors?.text || '#1f2937'
             }}
           >
-            <option value="all">Todos los estados</option>
-            <option value="active">Solo activos</option>
-            <option value="inactive">Solo inactivos</option>
+            <option value="all">{t('todos_estados')}</option>
+            <option value="active">{t('solo_activos')}</option>
+            <option value="inactive">{t('solo_inactivos')}</option>
           </select>
         </div>
       </div>
@@ -400,7 +404,7 @@ const StaffManager: React.FC = () => {
                 borderTopColor: colors?.primary || '#0ea5e9'
               }}
             ></div>
-            <p style={{ color: colors?.textSecondary || '#6b7280' }}>Cargando personal...</p>
+            <p style={{ color: colors?.textSecondary || '#6b7280' }}>{t('cargando_personal')}</p>
           </div>
         ) : filteredStaff.length === 0 ? (
           <div 
@@ -415,12 +419,12 @@ const StaffManager: React.FC = () => {
               className="text-lg font-medium mb-2 theme-transition"
               style={{ color: colors?.text || '#1f2937' }}
             >
-              No se encontraron especialistas
+              {t('no_especialistas_encontrados')}
             </h3>
             <p className="theme-transition" style={{ color: colors?.textSecondary || '#6b7280' }}>
               {searchTerm || filterSpecialty !== 'all' || filterActive !== 'all' 
-                ? 'Intenta cambiar los filtros de búsqueda' 
-                : 'Agrega especialistas para comenzar'}
+                ? t('intenta_cambiar_filtros') 
+                : t('agrega_especialistas')}
             </p>
           </div>
         ) : (
@@ -462,6 +466,7 @@ interface StaffCardProps {
 }
 
 const StaffCard: React.FC<StaffCardProps> = ({ staff, onEdit, onDelete, colors }) => {
+  const { t } = useTranslation();
   return (
     <div 
       className="rounded-xl shadow-lg overflow-hidden theme-transition"
@@ -493,7 +498,7 @@ const StaffCard: React.FC<StaffCardProps> = ({ staff, onEdit, onDelete, colors }
             color: 'white'
           }}
         >
-          {staff.isActive ? 'Activo' : 'Inactivo'}
+          {staff.isActive ? t('activo') : t('inactivo')}
         </div>
       </div>
       
@@ -505,7 +510,7 @@ const StaffCard: React.FC<StaffCardProps> = ({ staff, onEdit, onDelete, colors }
             className="text-sm font-medium mb-2 theme-transition"
             style={{ color: colors?.textSecondary || '#6b7280' }}
           >
-            Especialidades
+            {t('especialidades')}
           </h4>
           <div className="flex flex-wrap gap-2">
             {staff.specialties.map(specialty => {
@@ -519,7 +524,7 @@ const StaffCard: React.FC<StaffCardProps> = ({ staff, onEdit, onDelete, colors }
                     color: colors?.primary || '#0ea5e9'
                   }}
                 >
-                  {category?.name || specialty}
+                  {t('categoria_' + (category?.id || specialty))}
                 </span>
               );
             })}
@@ -548,7 +553,7 @@ const StaffCard: React.FC<StaffCardProps> = ({ staff, onEdit, onDelete, colors }
               className="text-xs mt-1 theme-transition"
               style={{ color: colors?.textSecondary || '#6b7280' }}
             >
-              Calificación
+              {t('calificacion')}
             </p>
           </div>
           
@@ -569,7 +574,7 @@ const StaffCard: React.FC<StaffCardProps> = ({ staff, onEdit, onDelete, colors }
               className="text-xs mt-1 theme-transition"
               style={{ color: colors?.textSecondary || '#6b7280' }}
             >
-              Servicios
+              {t('servicios')}
             </p>
           </div>
         </div>
@@ -580,7 +585,7 @@ const StaffCard: React.FC<StaffCardProps> = ({ staff, onEdit, onDelete, colors }
             className="text-sm theme-transition line-clamp-2"
             style={{ color: colors?.textSecondary || '#6b7280' }}
           >
-            {staff.bio || 'Sin biografía'}
+            {staff.bio || t('sin_biografia')}
           </p>
         </div>
         
@@ -589,7 +594,7 @@ const StaffCard: React.FC<StaffCardProps> = ({ staff, onEdit, onDelete, colors }
           className="text-sm mb-4 theme-transition"
           style={{ color: colors?.text || '#1f2937' }}
         >
-          <span className="font-medium">Experiencia:</span> {staff.experience}
+          <span className="font-medium">{t('experiencia')}:</span> {staff.experience}
         </div>
         
         {/* Actions */}
@@ -631,6 +636,7 @@ interface StaffFormProps {
 }
 
 const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading, colors }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<StaffMember>({
     id: staff?.id || '',
     name: staff?.name || '',
@@ -686,7 +692,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
               className="text-xl font-semibold theme-transition"
               style={{ color: colors?.text || '#1f2937' }}
             >
-              {staff ? 'Editar Especialista' : 'Nuevo Especialista'}
+              {staff ? t('editar_especialista') : t('nuevo_especialista')}
             </h3>
             <button
               onClick={onCancel}
@@ -705,7 +711,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                   className="block text-sm font-medium mb-2 theme-transition"
                   style={{ color: colors?.text || '#1f2937' }}
                 >
-                  Nombre Completo
+                  {t('nombre_completo')}
                 </label>
                 <input
                   type="text"
@@ -726,7 +732,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                   className="block text-sm font-medium mb-2 theme-transition"
                   style={{ color: colors?.text || '#1f2937' }}
                 >
-                  Cargo / Rol
+                  {t('cargo_rol')}
                 </label>
                 <input
                   type="text"
@@ -749,7 +755,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
     className="block text-sm font-medium mb-2 theme-transition"
     style={{ color: colors?.text || '#1f2937' }}
   >
-    Imagen
+    {t('imagen')}
   </label>
   
   {/* Input para archivo de imagen */}
@@ -788,7 +794,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
     className="text-xs mt-1 theme-transition"
     style={{ color: colors?.textSecondary || '#6b7280' }}
   >
-    Recomendado: imagen cuadrada de al menos 400x400 píxeles
+    {t('recomendado_imagen')}
   </p>
 </div>
 
@@ -799,7 +805,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                 className="block text-sm font-medium mb-2 theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Biografía
+                {t('biografia')}
               </label>
               <textarea
                 value={formData.bio}
@@ -821,7 +827,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                   className="block text-sm font-medium mb-2 theme-transition"
                   style={{ color: colors?.text || '#1f2937' }}
                 >
-                  Experiencia
+                  {t('experiencia')}
                 </label>
                 <input
                   type="text"
@@ -833,7 +839,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                     backgroundColor: colors?.background || '#f8fafc',
                     color: colors?.text || '#1f2937'
                   }}
-                  placeholder="Ej: 5 años"
+                  placeholder={t('ej_experiencia')}
                 />
               </div>
               
@@ -842,7 +848,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                   className="block text-sm font-medium mb-2 theme-transition"
                   style={{ color: colors?.text || '#1f2937' }}
                 >
-                  Calificación (1-5)
+                  {t('calificacion')}
                 </label>
                 <input
                   type="number"
@@ -867,7 +873,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                 className="block text-sm font-medium mb-2 theme-transition"
                 style={{ color: colors?.text || '#1f2937' }}
               >
-                Especialidades
+                {t('especialidades')}
               </label>
               <div 
                 className="p-4 rounded-lg grid grid-cols-2 md:grid-cols-3 gap-3 theme-transition"
@@ -892,7 +898,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                       className="text-sm theme-transition"
                       style={{ color: colors?.text || '#1f2937' }}
                     >
-                      {category.name}
+                      {t('categoria_' + category.id)}
                     </span>
                   </label>
                 ))}
@@ -902,7 +908,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                   className="text-xs mt-1 theme-transition"
                   style={{ color: colors?.error || '#ef4444' }}
                 >
-                  Selecciona al menos una especialidad
+                  {t('selecciona_al_menos_una_especialidad')}
                 </p>
               )}
             </div>
@@ -921,14 +927,14 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                   className="text-sm font-medium theme-transition"
                   style={{ color: colors?.text || '#1f2937' }}
                 >
-                  Especialista activo
+                  {t('especialista_activo')}
                 </span>
               </label>
               <p 
                 className="text-xs mt-1 theme-transition"
                 style={{ color: colors?.textSecondary || '#6b7280' }}
               >
-                Los especialistas inactivos no aparecerán en la reserva de citas
+                {t('especialista_inactivo_descripcion')}
               </p>
             </div>
 
@@ -945,7 +951,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                 }}
                 disabled={loading}
               >
-                Cancelar
+                {t('cancelar')}
               </button>
               <button
                 type="submit"
@@ -960,7 +966,7 @@ const StaffForm: React.FC<StaffFormProps> = ({ staff, onSave, onCancel, loading,
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}
-                {loading ? 'Guardando...' : 'Guardar Especialista'}
+                {loading ? t('guardando') : t('guardar_especialista')}
               </button>
             </div>
           </form>

@@ -1,5 +1,6 @@
 import { Service, ServiceCategory } from '../types';
 
+
 export const serviceCategories: { id: ServiceCategory; name: string; icon: string }[] = [
   { id: 'tratamientos-corporales', name: 'Tratamientos Corporales', icon: 'Sparkles' },
   { id: 'servicios-unas', name: 'Servicios de Uñas', icon: 'Hand' },
@@ -27,6 +28,9 @@ export const serviceCategories: { id: ServiceCategory; name: string; icon: strin
   { id: 'cejas-pestanas', name: 'Cejas y Pestañas', icon: 'Eye' },
   { id: 'nutricion', name: 'Nutrición', icon: 'Apple' }
 ];
+
+
+
 
 export const services: Service[] = [
   // Tratamientos Corporales

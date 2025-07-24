@@ -26,6 +26,8 @@ import { getCurrentTenant } from '../utils/tenantManager';
 // ✅ Importar el sistema de eventos real
 import { subscribeToEvent, unsubscribeFromEvent, AppEvents } from "../utils/eventManager"
 import type { Appointment, Client } from '../types';
+import { useTranslation } from 'react-i18next';
+
 
 interface ActivityItem {
   id: string
@@ -209,6 +211,7 @@ const calculateWeeklySummary = async (appointments: Appointment[], clients: Clie
 };
 
 const Dashboard: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [weeklySummary, setWeeklySummary] = useState<WeeklySummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -417,10 +420,10 @@ const Dashboard: React.FC = () => {
     const time = new Date(timestamp)
     const diffInMinutes = Math.floor((now.getTime() - time.getTime()) / (1000 * 60))
 
-    if (diffInMinutes < 1) return "Ahora mismo"
-    if (diffInMinutes < 60) return `Hace ${diffInMinutes} min`
-    if (diffInMinutes < 1440) return `Hace ${Math.floor(diffInMinutes / 60)} h`
-    return `Hace ${Math.floor(diffInMinutes / 1440)} días`
+    if (diffInMinutes < 1) return t('ahora_mismo')
+    if (diffInMinutes < 60) return t('hace_min', { count: diffInMinutes })
+    if (diffInMinutes < 1440) return t('hace_horas', { count: Math.floor(diffInMinutes / 60) })
+    return t('hace_dias', { count: Math.floor(diffInMinutes / 1440) })
   }
 
   const formatGrowth = (growth: number) => {
@@ -453,7 +456,7 @@ const Dashboard: React.FC = () => {
               borderTopColor: colors?.primary || "#0ea5e9",
             }}
           ></div>
-          <p style={{ color: colors?.textSecondary || "#6b7280" }}>Cargando dashboard...</p>
+          <p style={{ color: colors?.textSecondary || "#6b7280" }}>{t('cargando_dashboard')}</p>
         </div>
       </div>
     )
@@ -465,10 +468,10 @@ const Dashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-            Dashboard en Tiempo Real
+            {t('dashboard_titulo')}
           </h1>
           <p className="mt-1 theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-            Última actualización: {lastUpdate.toLocaleTimeString("es-ES")}
+            {t('ultima_actualizacion')}: {lastUpdate.toLocaleTimeString(i18n.language === 'es' ? 'es-ES' : 'en-US')}
           </p>
         </div>
 
@@ -479,7 +482,7 @@ const Dashboard: React.FC = () => {
           style={{ backgroundColor: colors?.primary || "#0ea5e9" }}
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
-          {isRefreshing ? "Actualizando..." : "Actualizar"}
+          {isRefreshing ? t('actualizando') : t('actualizar')}
         </button>
       </div>
 
@@ -493,7 +496,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                Citas Esta Semana
+                {t('citas_semana')}
               </p>
               <p className="text-2xl font-bold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
                 {weeklySummary?.totalAppointments || 0}
@@ -527,7 +530,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                Ingresos Semanales
+                {t('ingresos_semanales')}
               </p>
               <p className="text-2xl font-bold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
                 ${(weeklySummary?.totalRevenue || 0).toLocaleString()}
@@ -561,7 +564,7 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                Nuevos Clientes
+                {t('nuevos_clientes')}
               </p>
               <p className="text-2xl font-bold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
                 {weeklySummary?.newClients || 0}
@@ -595,13 +598,13 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                Valor Promedio
+                {t('valor_promedio')}
               </p>
               <p className="text-2xl font-bold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
                 ${(weeklySummary?.averageServiceValue || 0).toFixed(0)}
               </p>
               <p className="text-xs mt-1 theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                Por servicio
+                {t('por_servicio')}
               </p>
             </div>
             <div
@@ -626,7 +629,7 @@ const Dashboard: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <h2 className="text-xl font-semibold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                    Actividad Reciente
+                    {t('actividad_reciente')}
                   </h2>
                   {newActivityCount > 0 && (
                     <div
@@ -636,14 +639,14 @@ const Dashboard: React.FC = () => {
                         color: colors?.primary || "#0ea5e9",
                       }}
                     >
-                      {newActivityCount} nuevo{newActivityCount !== 1 ? "s" : ""}
+                      {t('nuevos', { count: newActivityCount })}
                     </div>
                   )}
                 </div>
                 <div className="flex items-center">
                   <Zap className="w-4 h-4 mr-1" style={{ color: colors?.success || "#10b981" }} />
                   <span className="text-sm theme-transition" style={{ color: colors?.success || "#10b981" }}>
-                    En vivo
+                    {t('en_vivo')}
                   </span>
                 </div>
               </div>
@@ -654,10 +657,10 @@ const Dashboard: React.FC = () => {
                 <div className="text-center py-8">
                   <Activity className="w-12 h-12 mx-auto mb-4" style={{ color: colors?.textSecondary || "#6b7280" }} />
                   <h3 className="text-lg font-medium mb-2" style={{ color: colors?.text || "#1f2937" }}>
-                    Sin actividad reciente
+                    {t('sin_actividad_reciente')}
                   </h3>
                   <p style={{ color: colors?.textSecondary || "#6b7280" }}>
-                    Las actividades del sistema aparecerán aquí en tiempo real
+                    {t('ayuda_actividad')}
                   </p>
                 </div>
               ) : (
@@ -728,13 +731,13 @@ const Dashboard: React.FC = () => {
             style={{ backgroundColor: colors?.surface || "#ffffff" }}
           >
             <h3 className="text-lg font-semibold mb-4 theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-              Rendimiento Semanal
+              {t('rendimiento_semanal')}
             </h3>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                  Servicios Completados
+                  {t('servicios_completados')}
                 </span>
                 <span className="font-semibold theme-transition" style={{ color: colors?.text || "#1f2937" }}>
                   {weeklySummary?.completedServices || 0}
@@ -756,10 +759,10 @@ const Dashboard: React.FC = () => {
 
               <div className="flex items-center justify-between">
                 <span className="text-sm theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                  Meta Semanal
+                  {t('meta_semanal')}
                 </span>
                 <span className="text-sm theme-transition" style={{ color: colors?.textSecondary || "#6b7280" }}>
-                  50 servicios
+                  {t('meta_servicios', { count: 50 })}
                 </span>
               </div>
             </div>
@@ -771,7 +774,7 @@ const Dashboard: React.FC = () => {
             style={{ backgroundColor: colors?.surface || "#ffffff" }}
           >
             <h3 className="text-lg font-semibold mb-4 theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-              Estado del Sistema
+              {t('estado_sistema')}
             </h3>
 
             <div className="space-y-3">
@@ -779,7 +782,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center">
                   <CheckCircle className="w-4 h-4 mr-2" style={{ color: colors?.success || "#10b981" }} />
                   <span className="text-sm theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                    Eventos en tiempo real
+                    {t('eventos_tiempo_real')}
                   </span>
                 </div>
                 <span
@@ -789,7 +792,7 @@ const Dashboard: React.FC = () => {
                     color: colors?.success || "#10b981",
                   }}
                 >
-                  Activo
+                  {t('activo')}
                 </span>
               </div>
 
@@ -797,7 +800,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center">
                   <CheckCircle className="w-4 h-4 mr-2" style={{ color: colors?.success || "#10b981" }} />
                   <span className="text-sm theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                    Base de datos
+                    {t('base_datos')}
                   </span>
                 </div>
                 <span
@@ -807,7 +810,7 @@ const Dashboard: React.FC = () => {
                     color: colors?.success || "#10b981",
                   }}
                 >
-                  Operativo
+                  {t('operativo')}
                 </span>
               </div>
 
@@ -815,7 +818,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center">
                   <CheckCircle className="w-4 h-4 mr-2" style={{ color: colors?.success || "#10b981" }} />
                   <span className="text-sm theme-transition" style={{ color: colors?.text || "#1f2937" }}>
-                    Sincronización
+                    {t('sincronizacion')}
                   </span>
                 </div>
                 <span
@@ -825,7 +828,7 @@ const Dashboard: React.FC = () => {
                     color: colors?.success || "#10b981",
                   }}
                 >
-                  Funcionando
+                  {t('funcionando')}
                 </span>
               </div>
             </div>

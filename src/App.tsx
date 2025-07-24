@@ -13,6 +13,7 @@ import { getActiveServices } from './utils/servicesManager';
 import { serviceCategories } from './data/services';
 import { subscribeToEvent, unsubscribeFromEvent, AppEvents } from './utils/eventManager';
 import { syncDataAcrossBrowsers } from './utils/syncManager';
+import './i18n';
 
 function App() {
   const [view, setView] = useState<'home' | 'booking' | 'admin' | 'login'>('home');
