@@ -27,13 +27,18 @@ import {
   repairAuth
 } from '../utils/auth';
 import { getCurrentTenant } from '../utils/tenantManager';
+import { useTranslation } from 'react-i18next';
+
 
 const CredentialsManager: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(getCurrentUser());
   const [activeTab, setActiveTab] = useState<'password' | 'username' | 'history' | 'repair'>('password');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  
+
+  const { t } = useTranslation();
+
+
   // Password change state
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -100,17 +105,17 @@ const CredentialsManager: React.FC = () => {
 
     // Validation
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      setMessage({ type: 'error', text: 'Todos los campos son requeridos' });
+      setMessage({ type: 'error', text: t('credentialsManager.allFieldsRequired') });
       return;
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setMessage({ type: 'error', text: 'Las contraseñas nuevas no coinciden' });
+      setMessage({ type: 'error', text: t('credentialsManager.passwordsDoNotMatch') });
       return;
     }
 
     if (passwordData.currentPassword === passwordData.newPassword) {
-      setMessage({ type: 'error', text: 'La nueva contraseña debe ser diferente a la actual' });
+      setMessage({ type: 'error', text: t('credentialsManager.newPasswordMustBeDifferent') });
       return;
     }
 
@@ -131,15 +136,15 @@ const CredentialsManager: React.FC = () => {
       );
 
       if (result.success) {
-        setMessage({ type: 'success', text: '¡Contraseña actualizada exitosamente!' });
+        setMessage({ type: 'success', text: t('credentialsManager.passwordUpdated') });
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         setCredentialHistory(getCredentialUpdates());
         setLastUpdates(getLastCredentialUpdate(currentUser.id));
       } else {
-        setMessage({ type: 'error', text: result.error || 'Error al cambiar contraseña' });
+        setMessage({ type: 'error', text: result.error || t('credentialsManager.errorChangingPassword') });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Error del sistema al cambiar contraseña' });
+      setMessage({ type: 'error', text: t('credentialsManager.systemErrorChangingPassword') });
     } finally {
       setLoading(false);
     }
@@ -150,12 +155,12 @@ const CredentialsManager: React.FC = () => {
 
     // Validation
     if (!usernameData.currentPassword || !usernameData.newUsername) {
-      setMessage({ type: 'error', text: 'Todos los campos son requeridos' });
+      setMessage({ type: 'error', text: t('credentialsManager.allFieldsRequired') });
       return;
     }
 
     if (usernameData.newUsername === currentUser.username) {
-      setMessage({ type: 'error', text: 'El nuevo nombre de usuario debe ser diferente al actual' });
+      setMessage({ type: 'error', text: t('credentialsManager.newUsernameMustBeDifferent') });
       return;
     }
 
@@ -176,16 +181,16 @@ const CredentialsManager: React.FC = () => {
       );
 
       if (result.success) {
-        setMessage({ type: 'success', text: '¡Nombre de usuario actualizado exitosamente!' });
+        setMessage({ type: 'success', text: t('credentialsManager.usernameUpdated') });
         setUsernameData({ currentPassword: '', newUsername: '' });
         setCurrentUser(getCurrentUser()); // Refresh current user data
         setCredentialHistory(getCredentialUpdates());
         setLastUpdates(getLastCredentialUpdate(currentUser.id));
       } else {
-        setMessage({ type: 'error', text: result.error || 'Error al cambiar nombre de usuario' });
+        setMessage({ type: 'error', text: result.error || t('credentialsManager.errorChangingUsername') });
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Error del sistema al cambiar nombre de usuario' });
+      setMessage({ type: 'error', text: t('credentialsManager.systemErrorChangingUsername') });
     } finally {
       setLoading(false);
     }
@@ -193,18 +198,18 @@ const CredentialsManager: React.FC = () => {
 
   const handleRepairCredentials = async () => {
     if (!currentTenant) {
-      setRepairMessage({ type: 'error', text: 'No hay negocio seleccionado' });
+      setRepairMessage({ type: 'error', text: t('credentialsManager.noTenantSelected') });
       return;
     }
 
     // Validation
     if (!repairData.email || !repairData.password || !repairData.confirmPassword) {
-      setRepairMessage({ type: 'error', text: 'Todos los campos son requeridos' });
+      setRepairMessage({ type: 'error', text: t('credentialsManager.allFieldsRequired') });
       return;
     }
 
     if (repairData.password !== repairData.confirmPassword) {
-      setRepairMessage({ type: 'error', text: 'Las contraseñas no coinciden' });
+      setRepairMessage({ type: 'error', text: t('credentialsManager.passwordsDoNotMatch') });
       return;
     }
 
@@ -225,13 +230,13 @@ const CredentialsManager: React.FC = () => {
       );
 
       if (result.success) {
-        setRepairMessage({ type: 'success', text: '¡Credenciales reparadas exitosamente! Cierra sesión y vuelve a iniciar con las nuevas credenciales.' });
+        setRepairMessage({ type: 'success', text: t('credentialsManager.credentialsRepaired') });
         setRepairData({ email: '', password: '', confirmPassword: '' });
       } else {
-        setRepairMessage({ type: 'error', text: result.error || 'Error al reparar credenciales' });
+        setRepairMessage({ type: 'error', text: result.error || t('credentialsManager.errorRepairingCredentials') });
       }
     } catch (error) {
-      setRepairMessage({ type: 'error', text: 'Error del sistema al reparar credenciales' });
+      setRepairMessage({ type: 'error', text: t('credentialsManager.systemErrorRepairingCredentials') });
     } finally {
       setRepairLoading(false);
     }
@@ -246,8 +251,8 @@ const CredentialsManager: React.FC = () => {
       <div className="bg-white rounded-xl shadow-lg p-6">
         <div className="text-center py-8">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Acceso Denegado</h3>
-          <p className="text-gray-600">No se pudo verificar tu identidad. Por favor, inicia sesión nuevamente.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t('credentialsManager.accessDenied')}</h3>
+          <p className="text-gray-600">{t('credentialsManager.couldNotVerifyIdentity')}</p>
         </div>
       </div>
     );
@@ -260,14 +265,14 @@ const CredentialsManager: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
             <Key className="w-8 h-8 mr-3 text-blue-600" />
-            Gestión de Credenciales
+            {t('credentialsManager.title')}
           </h2>
           <p className="text-gray-600 mt-1">
-            Administra tu nombre de usuario y contraseña de forma segura
+            {t('credentialsManager.subtitle')}
           </p>
           {currentTenant && (
             <p className="text-sm text-blue-600 mt-1">
-              Negocio: {currentTenant.name}
+              {t('credentialsManager.tenant')}: {currentTenant.name}
             </p>
           )}
         </div>
@@ -284,24 +289,24 @@ const CredentialsManager: React.FC = () => {
       <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
         <h3 className="font-semibold text-blue-800 mb-2 flex items-center">
           <Clock className="w-4 h-4 mr-2" />
-          Últimas Actualizaciones
+          {t('credentialsManager.lastUpdates')}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-blue-700 font-medium">Nombre de usuario:</span>
+            <span className="text-blue-700 font-medium">{t('credentialsManager.username')}:</span>
             <p className="text-blue-600">
               {lastUpdates.username 
                 ? new Date(lastUpdates.username).toLocaleString('es-ES')
-                : 'Nunca actualizado'
+                : t('credentialsManager.neverUpdated')
               }
             </p>
           </div>
           <div>
-            <span className="text-blue-700 font-medium">Contraseña:</span>
+            <span className="text-blue-700 font-medium">{t('credentialsManager.password')}:</span>
             <p className="text-blue-600">
               {lastUpdates.password 
                 ? new Date(lastUpdates.password).toLocaleString('es-ES')
-                : 'Nunca actualizada'
+                : t('credentialsManager.neverUpdated')
               }
             </p>
           </div>
@@ -313,10 +318,10 @@ const CredentialsManager: React.FC = () => {
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
             {[
-              { id: 'password', label: 'Cambiar Contraseña', icon: Lock },
-              { id: 'username', label: 'Cambiar Usuario', icon: User }, 
-              { id: 'history', label: 'Historial', icon: History },
-              { id: 'repair', label: 'Reparar Credenciales', icon: Wrench }
+              { id: 'password', label: t('credentialsManager.changePasswordTab'), icon: Lock },
+              { id: 'username', label: t('credentialsManager.changeUsernameTab'), icon: User }, 
+              { id: 'history', label: t('credentialsManager.historyTab'), icon: History },
+              { id: 'repair', label: t('credentialsManager.repairTab'), icon: Wrench }
             ].map(tab => {
               const Icon = tab.icon;
               return (
@@ -363,12 +368,12 @@ const CredentialsManager: React.FC = () => {
                 <div className="flex items-start">
                   <Shield className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-yellow-800">Requisitos de Seguridad</h4>
+                    <h4 className="font-medium text-yellow-800">{t('credentialsManager.securityRequirements')}</h4>
                     <ul className="text-sm text-yellow-700 mt-1 space-y-1">
-                      <li>• Mínimo 8 caracteres</li>
-                      <li>• Al menos una letra minúscula y una mayúscula</li>
-                      <li>• Al menos un número</li>
-                      <li>• Al menos un carácter especial (!@#$%^&*)</li>
+                      <li>• {t('credentialsManager.min8Chars')}</li>
+                      <li>• {t('credentialsManager.lowerUpper')}</li>
+                      <li>• {t('credentialsManager.atLeastOneNumber')}</li>
+                      <li>• {t('credentialsManager.atLeastOneSpecial')}</li>
                     </ul>
                   </div>
                 </div>
@@ -378,7 +383,7 @@ const CredentialsManager: React.FC = () => {
                 {/* Current Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Contraseña Actual <span className="text-red-500">*</span>
+                    {t('credentialsManager.currentPassword')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -387,7 +392,7 @@ const CredentialsManager: React.FC = () => {
                       value={passwordData.currentPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
                       className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ingresa tu contraseña actual"
+                      placeholder={t('credentialsManager.enterCurrentPassword')}
                       disabled={loading}
                     />
                     <button
@@ -403,7 +408,7 @@ const CredentialsManager: React.FC = () => {
                 {/* New Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nueva Contraseña <span className="text-red-500">*</span>
+                    {t('credentialsManager.newPassword')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -412,7 +417,7 @@ const CredentialsManager: React.FC = () => {
                       value={passwordData.newPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
                       className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ingresa tu nueva contraseña"
+                      placeholder={t('credentialsManager.enterNewPassword')}
                       disabled={loading}
                     />
                     <button
@@ -427,7 +432,7 @@ const CredentialsManager: React.FC = () => {
                   {/* Password Validation */}
                   {passwordData.newPassword && !passwordValidation.isValid && (
                     <div className="mt-2 p-3 bg-red-50 rounded-lg border border-red-200">
-                      <p className="text-sm font-medium text-red-800 mb-2">Errores en la contraseña:</p>
+                      <p className="text-sm font-medium text-red-800 mb-2">{t('credentialsManager.passwordErrors')}</p>
                       <ul className="text-xs space-y-1">
                         {passwordValidation.errors.map((error, index) => (
                           <li key={index} className="flex items-center text-red-700">
@@ -443,7 +448,7 @@ const CredentialsManager: React.FC = () => {
                 {/* Confirm Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirmar Nueva Contraseña <span className="text-red-500">*</span>
+                    {t('credentialsManager.confirmNewPassword')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -452,7 +457,7 @@ const CredentialsManager: React.FC = () => {
                       value={passwordData.confirmPassword}
                       onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                       className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Confirma tu nueva contraseña"
+                      placeholder={t('credentialsManager.confirmNewPasswordPlaceholder')}
                       disabled={loading}
                     />
                     <button
@@ -467,7 +472,7 @@ const CredentialsManager: React.FC = () => {
                   {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
                     <p className="text-red-500 text-xs mt-1 flex items-center">
                       <AlertCircle className="w-3 h-3 mr-1" />
-                      Las contraseñas no coinciden
+                      {t('credentialsManager.passwordsDoNotMatch')}
                     </p>
                   )}
                 </div>
@@ -482,7 +487,7 @@ const CredentialsManager: React.FC = () => {
                   ) : (
                     <Save className="w-4 h-4 mr-2" />
                   )}
-                  {loading ? 'Actualizando...' : 'Actualizar Contraseña'}
+                  {loading ? t('credentialsManager.updating') : t('credentialsManager.updatePassword')}
                 </button>
               </div>
             </div>
@@ -495,10 +500,9 @@ const CredentialsManager: React.FC = () => {
                 <div className="flex items-start">
                   <User className="w-5 h-5 text-blue-600 mr-2 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-blue-800">Información Importante</h4>
+                    <h4 className="font-medium text-blue-800">{t('credentialsManager.importantInfo')}</h4>
                     <p className="text-sm text-blue-700 mt-1">
-                      Cambiar tu nombre de usuario cerrará todas las sesiones activas. 
-                      Deberás iniciar sesión nuevamente con el nuevo nombre de usuario.
+                      {t('credentialsManager.changingUsernameLogsOut')}
                     </p>
                   </div>
                 </div>
@@ -508,7 +512,7 @@ const CredentialsManager: React.FC = () => {
                 {/* Current Username */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nombre de Usuario Actual
+                    {t('credentialsManager.currentUsername')}
                   </label>
                   <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg">
                     <span className="font-medium text-gray-900">{currentUser.username}</span>
@@ -518,7 +522,7 @@ const CredentialsManager: React.FC = () => {
                 {/* New Username */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nuevo Nombre de Usuario <span className="text-red-500">*</span>
+                    {t('credentialsManager.newUsername')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -527,7 +531,7 @@ const CredentialsManager: React.FC = () => {
                       value={usernameData.newUsername}
                       onChange={(e) => setUsernameData(prev => ({ ...prev, newUsername: e.target.value }))}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ingresa tu nuevo nombre de usuario"
+                      placeholder={t('credentialsManager.enterNewUsername')}
                       disabled={loading}
                     />
                   </div>
@@ -535,7 +539,7 @@ const CredentialsManager: React.FC = () => {
                   {/* Username Validation */}
                   {usernameData.newUsername && !usernameValidation.isValid && (
                     <div className="mt-2 p-3 bg-red-50 rounded-lg border border-red-200">
-                      <p className="text-sm font-medium text-red-800 mb-2">Errores en el nombre de usuario:</p>
+                      <p className="text-sm font-medium text-red-800 mb-2">{t('credentialsManager.usernameErrors')}</p>
                       <ul className="text-xs space-y-1">
                         {usernameValidation.errors.map((error, index) => (
                           <li key={index} className="flex items-center text-red-700">
@@ -551,7 +555,7 @@ const CredentialsManager: React.FC = () => {
                 {/* Current Password for Verification */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Contraseña Actual (para verificación) <span className="text-red-500">*</span>
+                    {t('credentialsManager.currentPasswordForVerification')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -560,7 +564,7 @@ const CredentialsManager: React.FC = () => {
                       value={usernameData.currentPassword}
                       onChange={(e) => setUsernameData(prev => ({ ...prev, currentPassword: e.target.value }))}
                       className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ingresa tu contraseña actual"
+                      placeholder={t('credentialsManager.enterCurrentPassword')}
                       disabled={loading}
                     />
                     <button
@@ -583,7 +587,7 @@ const CredentialsManager: React.FC = () => {
                   ) : (
                     <RefreshCw className="w-4 h-4 mr-2" />
                   )}
-                  {loading ? 'Actualizando...' : 'Actualizar Nombre de Usuario'}
+                  {loading ? t('credentialsManager.updating') : t('credentialsManager.updateUsername')}
                 </button>
               </div>
             </div>
@@ -593,9 +597,9 @@ const CredentialsManager: React.FC = () => {
           {activeTab === 'history' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Historial de Cambios de Credenciales</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{t('credentialsManager.credentialHistory')}</h3>
                 <span className="text-sm text-gray-500">
-                  {credentialHistory.length} registro{credentialHistory.length !== 1 ? 's' : ''}
+                  {credentialHistory.length} {t('credentialsManager.record', { count: credentialHistory.length })}
                 </span>
               </div>
 
@@ -605,14 +609,7 @@ const CredentialsManager: React.FC = () => {
                     <div key={update.id} className="border border-gray-200 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center">
-                          {update.type === 'password' ? (
-                            <Lock className="w-4 h-4 text-blue-600 mr-2" />
-                          ) : (
-                            <User className="w-4 h-4 text-blue-600 mr-2" />
-                          )}
-                          <span className="font-medium text-gray-900">
-                            {update.type === 'password' ? 'Contraseña actualizada' : 'Nombre de usuario actualizado'}
-                          </span>
+                          {update.type === 'password' ? t('credentialsManager.passwordUpdatedHistory') : t('credentialsManager.usernameUpdatedHistory')}
                         </div>
                         <span className="text-sm text-gray-500">
                           {new Date(update.timestamp).toLocaleString('es-ES')}
@@ -620,9 +617,9 @@ const CredentialsManager: React.FC = () => {
                       </div>
                       
                       <div className="text-sm text-gray-600">
-                        <p><strong>Usuario:</strong> {update.userId}</p>
-                        <p><strong>IP:</strong> {update.ipAddress}</p>
-                        <p><strong>Navegador:</strong> {update.userAgent.substring(0, 50)}...</p>
+                        <p><strong>{t('credentialsManager.user')}:</strong> {update.userId}</p>
+                        <p><strong>{t('credentialsManager.ip')}:</strong> {update.ipAddress}</p>
+                        <p><strong>{t('credentialsManager.browser')}:</strong> {update.userAgent.substring(0, 50)}...</p>
                       </div>
                     </div>
                   ))}
@@ -630,7 +627,7 @@ const CredentialsManager: React.FC = () => {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <History className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                  <p>No hay cambios de credenciales registrados</p>
+                  <p>{t('credentialsManager.noCredentialChanges')}</p>
                 </div>
               )}
             </div>
@@ -643,13 +640,12 @@ const CredentialsManager: React.FC = () => {
                 <div className="flex items-start">
                   <Wrench className="w-5 h-5 text-yellow-600 mr-2 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-yellow-800">Herramienta de Reparación</h4>
+                    <h4 className="font-medium text-yellow-800">{t('credentialsManager.repairTool')}</h4>
                     <p className="text-sm text-yellow-700 mt-1">
-                      Esta herramienta te permite reparar tus credenciales si estás teniendo problemas para iniciar sesión.
-                      Se creará un nuevo usuario administrador para este negocio.
+                      {t('credentialsManager.repairToolDescription')}
                     </p>
                     <p className="text-sm text-yellow-700 mt-1">
-                      <strong>Negocio actual:</strong> {currentTenant?.name || 'No hay negocio seleccionado'}
+                      <strong>{t('credentialsManager.currentTenant')}:</strong> {currentTenant?.name || t('credentialsManager.noTenantSelected')}
                     </p>
                   </div>
                 </div>
@@ -677,7 +673,7 @@ const CredentialsManager: React.FC = () => {
                 {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email / Nombre de Usuario <span className="text-red-500">*</span>
+                    {t('credentialsManager.emailOrUsername')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -686,7 +682,7 @@ const CredentialsManager: React.FC = () => {
                       value={repairData.email}
                       onChange={(e) => setRepairData(prev => ({ ...prev, email: e.target.value }))}
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ingresa tu email"
+                      placeholder={t('credentialsManager.enterEmail')}
                       disabled={repairLoading}
                     />
                   </div>
@@ -695,7 +691,7 @@ const CredentialsManager: React.FC = () => {
                 {/* New Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nueva Contraseña <span className="text-red-500">*</span>
+                    {t('credentialsManager.newPassword')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -704,7 +700,7 @@ const CredentialsManager: React.FC = () => {
                       value={repairData.password}
                       onChange={(e) => setRepairData(prev => ({ ...prev, password: e.target.value }))}
                       className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Ingresa una nueva contraseña"
+                      placeholder={t('credentialsManager.enterNewPassword')}
                       disabled={repairLoading}
                     />
                     <button
@@ -719,7 +715,7 @@ const CredentialsManager: React.FC = () => {
                   {/* Password Validation */}
                   {repairData.password && !repairPasswordValidation.isValid && (
                     <div className="mt-2 p-3 bg-red-50 rounded-lg border border-red-200">
-                      <p className="text-sm font-medium text-red-800 mb-2">Errores en la contraseña:</p>
+                      <p className="text-sm font-medium text-red-800 mb-2">{t('credentialsManager.passwordErrors')}</p>
                       <ul className="text-xs space-y-1">
                         {repairPasswordValidation.errors.map((error, index) => (
                           <li key={index} className="flex items-center text-red-700">
@@ -735,7 +731,7 @@ const CredentialsManager: React.FC = () => {
                 {/* Confirm Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirmar Contraseña <span className="text-red-500">*</span>
+                    {t('credentialsManager.confirmPassword')} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -744,7 +740,7 @@ const CredentialsManager: React.FC = () => {
                       value={repairData.confirmPassword}
                       onChange={(e) => setRepairData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                       className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Confirma la nueva contraseña"
+                      placeholder={t('credentialsManager.confirmPasswordPlaceholder')}
                       disabled={repairLoading}
                     />
                     <button
@@ -759,7 +755,7 @@ const CredentialsManager: React.FC = () => {
                   {repairData.confirmPassword && repairData.password !== repairData.confirmPassword && (
                     <p className="text-red-500 text-xs mt-1 flex items-center">
                       <AlertCircle className="w-3 h-3 mr-1" />
-                      Las contraseñas no coinciden
+                      {t('credentialsManager.passwordsDoNotMatch')}
                     </p>
                   )}
                 </div>
@@ -779,7 +775,7 @@ const CredentialsManager: React.FC = () => {
                   ) : (
                     <Wrench className="w-4 h-4 mr-2" />
                   )}
-                  {repairLoading ? 'Reparando...' : 'Reparar Credenciales'}
+                  {repairLoading ? t('credentialsManager.repairing') : t('credentialsManager.repairCredentials')}
                 </button>
               </div>
             </div>

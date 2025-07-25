@@ -14,6 +14,7 @@ import { serviceCategories } from './data/services';
 import { subscribeToEvent, unsubscribeFromEvent, AppEvents } from './utils/eventManager';
 import { syncDataAcrossBrowsers } from './utils/syncManager';
 import './i18n';
+import { useTranslation } from 'react-i18next';
 
 function App() {
   const [view, setView] = useState<'home' | 'booking' | 'admin' | 'login'>('home');
@@ -134,6 +135,8 @@ function App() {
     }
   };
 
+  const { t, i18n } = useTranslation();
+
   if (authState.loading) {
     return (
       <div className="min-h-screen theme-transition" style={{ background: `linear-gradient(135deg, ${colors?.background || '#f8fafc'}, ${colors?.surface || '#ffffff'})` }}>
@@ -160,6 +163,15 @@ function App() {
         background: `linear-gradient(135deg, ${colors?.background || '#f8fafc'}, ${colors?.surface || '#ffffff'})` 
       }}
     >
+      {/* Botón de cambio de idioma */}
+      <button
+        onClick={() => i18n.changeLanguage(i18n.language === 'es' ? 'en' : 'es')}
+        className="fixed top-6 right-8 z-50 px-4 py-2 rounded-full shadow-lg bg-white/80 hover:bg-blue-600 hover:text-white text-blue-600 font-bold border border-blue-200 transition-all duration-200 backdrop-blur-md"
+        style={{ letterSpacing: '1px' }}
+        aria-label={i18n.language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
+      >
+        {i18n.language === 'es' ? 'ENGLISH' : 'ESPAÑOL'}
+      </button>
       
       {/* Mediterranean decorative elements with theme colors */}
       <div className="absolute inset-0 opacity-10">
@@ -239,19 +251,19 @@ function App() {
               className="text-2xl font-bold mb-4 text-center theme-transition"
               style={{ color: colors?.text || '#1f2937' }}
             >
-              Reservar Cita
+              {t('home.bookAppointment')}
             </h3>
             <p 
               className="text-center mb-6 theme-transition"
               style={{ color: colors?.textSecondary || '#6b7280' }}
             >
-              Agenda tu cita de manera fácil y rápida. Selecciona tus servicios favoritos y el horario que mejor te convenga.
+              {t('home.bookAppointmentDesc')}
             </p>
             <div 
               className="flex items-center justify-center font-semibold group-hover:translate-x-1 transition-transform theme-transition"
               style={{ color: colors?.primary || '#0ea5e9' }}
             >
-              <span>Comenzar reserva</span>
+              <span>{t('home.startBooking')}</span>
               <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
@@ -265,7 +277,7 @@ function App() {
             className="text-3xl font-bold text-center mb-12 theme-transition"
             style={{ color: colors?.text || '#1f2937' }}
           >
-            Nuestros Servicios
+            {t('home.ourServices')}
           </h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {serviceCategories
@@ -284,18 +296,13 @@ function App() {
                     className="text-xl font-semibold mb-3 text-center theme-transition"
                     style={{ color: colors?.text || '#1f2937' }}
                   >
-                    {category.name}
+                    {t(`home.category.${category.id}`)}
                   </h3>
                   <p 
                     className="text-center theme-transition"
                     style={{ color: colors?.textSecondary || '#6b7280' }}
                   >
-                    {category.id === 'tratamientos-faciales' && 'Cuidado profesional para tu rostro con productos de alta calidad'}
-                    {category.id === 'servicios-cabello' && 'Cortes, tintes y peinados realizados por estilistas expertos'}
-                    {category.id === 'masajes' && 'Sesiones de relajación para liberar el estrés y renovar energías'}
-                    {category.id === 'servicios-unas' && 'Manicure y pedicure con técnicas modernas y esmaltes premium'}
-                    {category.id === 'tratamientos-corporales' && 'Servicios integrales para el cuidado y embellecimiento corporal'}
-                    {category.id === 'productos' && 'Línea exclusiva de productos para el cuidado personal'}
+                    {t(`home.categoryDesc.${category.id}`)}
                   </p>
                 </div>
               ))}
@@ -316,8 +323,8 @@ function App() {
               className="p-8 text-white text-center theme-transition"
               style={{ background: `linear-gradient(135deg, ${colors?.primary || '#0ea5e9'}, ${colors?.secondary || '#06b6d4'}, ${colors?.accent || '#3b82f6'})` }}
             >
-              <h2 className="text-3xl font-bold mb-2">📍 Visítanos</h2>
-              <p className="opacity-90">Información de contacto y ubicación</p>
+              <h2 className="text-3xl font-bold mb-2">📍 {t('home.visitUs')}</h2>
+              <p className="opacity-90">{t('home.contactInfo')}</p>
             </div>
             
             <div className="p-8">
@@ -334,7 +341,7 @@ function App() {
                     className="text-lg font-semibold mb-2 theme-transition"
                     style={{ color: colors?.text || '#1f2937' }}
                   >
-                    Ubicación
+                    {t('home.location')}
                   </h3>
                   <p 
                     className="text-sm leading-relaxed theme-transition"
@@ -349,7 +356,7 @@ function App() {
                     className="inline-block mt-3 font-medium text-sm transition-colors theme-transition"
                     style={{ color: colors?.primary || '#0ea5e9' }}
                   >
-                    Ver en Google Maps →
+                    {t('home.viewOnGoogleMaps')}
                   </a>
                 </div>
 
@@ -365,20 +372,20 @@ function App() {
                     className="text-lg font-semibold mb-2 theme-transition"
                     style={{ color: colors?.text || '#1f2937' }}
                   >
-                    Horarios
+                    {t('home.hours')}
                   </h3>
                   <div 
                     className="text-sm space-y-1 theme-transition"
                     style={{ color: colors?.textSecondary || '#6b7280' }}
                   >
-                    <p><strong>Lunes - Viernes:</strong><br />
-                      {salonHours?.monday?.isOpen ? `${salonHours.monday.open} - ${salonHours.monday.close}` : "Cerrado"}
+                    <p><strong>{t('home.mondayToFriday')}:</strong><br />
+                      {salonHours?.monday?.isOpen ? `${salonHours.monday.open} - ${salonHours.monday.close}` : t('home.closed')}
                     </p>
-                    <p><strong>Sábados:</strong><br />
-                      {salonHours?.saturday?.isOpen ? `${salonHours.saturday.open} - ${salonHours.saturday.close}` : "Cerrado"}
+                    <p><strong>{t('home.saturday')}:</strong><br />
+                      {salonHours?.saturday?.isOpen ? `${salonHours.saturday.open} - ${salonHours.saturday.close}` : t('home.closed')}
                     </p>
-                    <p><strong>Domingos:</strong><br />
-                      {salonHours?.sunday?.isOpen ? `${salonHours.sunday.open} - ${salonHours.sunday.close}` : "Cerrado"}
+                    <p><strong>{t('home.sunday')}:</strong><br />
+                      {salonHours?.sunday?.isOpen ? `${salonHours.sunday.open} - ${salonHours.sunday.close}` : t('home.closed')}
                     </p>
                   </div>
                   <div 
@@ -388,7 +395,7 @@ function App() {
                       color: colors?.success || '#10b981'
                     }}
                   >
-                    ✅ Abierto hoy
+                    ✅ {t('home.openToday')}
                   </div>
                 </div>
 
@@ -404,7 +411,7 @@ function App() {
                     className="text-lg font-semibold mb-2 theme-transition"
                     style={{ color: colors?.text || '#1f2937' }}
                   >
-                    Contacto
+                    {t('home.contact')}
                   </h3>
                   <div className="text-sm space-y-2">
                     <a 
@@ -448,7 +455,7 @@ function App() {
                     className="text-lg font-semibold mb-2 theme-transition"
                     style={{ color: colors?.text || '#1f2937' }}
                   >
-                    Síguenos
+                    {t('home.followUs')}
                   </h3>
                   <div className="space-y-3">
                     <a 
@@ -595,7 +602,7 @@ function App() {
             color: colors?.primary || '#0ea5e9'
           }}
         >
-          ← Volver al Inicio
+          ← {t('common.backToHome')}
         </button>
         <ClientBooking />
         <SyncStatusIndicator position="bottom-left" />
@@ -614,7 +621,7 @@ function App() {
             color: colors?.primary || '#0ea5e9'
           }}
         >
-          ← Volver al Inicio
+          ← {t('common.backToHome')}
         </button>
         <AdminPanel onLogout={handleLogout} />
         <SyncStatusIndicator position="bottom-left" />

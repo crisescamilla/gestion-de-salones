@@ -23,6 +23,9 @@ import { logout } from '../utils/auth';
 import { useTheme } from '../hooks/useTheme';
 import { useSalonName } from '../hooks/useSalonSettings';
 
+import { useTranslation } from 'react-i18next';
+
+
 interface AdminPanelProps {
   onLogout: () => void;
 }
@@ -33,6 +36,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   
   const { colors } = useTheme();
   const salonName = useSalonName();
+  const { t, i18n } = useTranslation();
+
 
   const handleLogout = () => {
     logout();
@@ -40,14 +45,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   };
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Activity, component: Dashboard },
-    { id: 'appointments', label: 'Citas', icon: Calendar, component: AppointmentManager },
-    { id: 'services', label: 'Servicios', icon: Scissors, component: ServicesManager },
-    { id: 'staff', label: 'Personal', icon: UserCog, component: StaffManager },
-    { id: 'rewards', label: 'Recompensas', icon: Gift, component: RewardsManager },
-    { id: 'themes', label: 'Temas', icon: Palette, component: ThemeManager },
-    { id: 'settings', label: 'Configuración', icon: Settings, component: SalonSettings },
-    { id: 'credentials', label: 'Credenciales', icon: UserCog, component: CredentialsManager }
+    { id: 'dashboard', label: t('sidebar.dashboard'), icon: Activity, component: Dashboard },
+    { id: 'appointments', label: t('sidebar.appointments'), icon: Calendar, component: AppointmentManager },
+    { id: 'services', label: t('sidebar.services'), icon: Scissors, component: ServicesManager },
+    { id: 'staff', label: t('sidebar.staff'), icon: UserCog, component: StaffManager },
+    { id: 'rewards', label: t('sidebar.rewards'), icon: Gift, component: RewardsManager },
+    { id: 'themes', label: t('sidebar.themes'), icon: Palette, component: ThemeManager },
+    { id: 'settings', label: t('sidebar.settings'), icon: Settings, component: SalonSettings },
+    { id: 'credentials', label: t('sidebar.credentials'), icon: UserCog, component: CredentialsManager }
   ];
 
   const ActiveComponent = menuItems.find(item => item.id === activeTab)?.component || Dashboard;
@@ -71,7 +76,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                     {salonName}
                   </h1>
                   <p className="text-sm theme-transition" style={{ color: colors?.textSecondary || '#6b7280' }}>
-                    Panel Administrativo
+                    {t('sidebar.adminPanel')}
                   </p>
                 </div>
               )}
@@ -150,10 +155,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
           <div className="flex items-center space-x-4">
             <div className="text-right">
               <p className="text-sm font-medium theme-transition" style={{ color: colors?.text || '#1f2937' }}>
-                Administrador
+                {t('sidebar.admin')}
               </p>
               <p className="text-xs theme-transition" style={{ color: colors?.textSecondary || '#6b7280' }}>
-                {new Date().toLocaleDateString('es-ES', { 
+                {new Date().toLocaleDateString(i18n.language, { 
                   weekday: 'long', 
                   year: 'numeric', 
                   month: 'long', 

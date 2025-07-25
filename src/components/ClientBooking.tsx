@@ -16,6 +16,7 @@ import { validatePhoneServerSide } from "../utils/phoneValidation"
 import ServiceSelector from "./ServiceSelector"
 import StaffSelector from "./StaffSelector"
 import PhoneInput from "./PhoneInput"
+import { useTranslation } from 'react-i18next';
 
 const ClientBooking: React.FC = () => {
   const [step, setStep] = useState(1)
@@ -41,6 +42,7 @@ const ClientBooking: React.FC = () => {
   const salonMotto = useSalonMotto() || "Tu belleza es nuestra pasión"
   const salonHours = useSalonHours()
   const { colors } = useTheme()
+  const { t } = useTranslation();
 
   const staffResult = useStaffById(selectedStaffId)
   const selectedStaff = staffResult?.staff || null
@@ -286,7 +288,7 @@ const ClientBooking: React.FC = () => {
               background: `linear-gradient(135deg, ${safeColors.primary}, ${safeColors.secondary})`,
             }}
           >
-            <h1 className="text-3xl font-bold mb-2">Reserva tu Cita</h1>
+            <h1 className="text-3xl font-bold mb-2">{t('booking.title')}</h1>
             <p className="opacity-90">{salonMotto}</p>
 
             {/* Progress Bar */}
@@ -308,11 +310,11 @@ const ClientBooking: React.FC = () => {
             </div>
 
             <div className="mt-2 flex justify-between text-xs opacity-80">
-              <span>Datos</span>
-              <span>Servicios</span>
-              <span>Especialista</span>
-              <span>Fecha</span>
-              <span>Confirmar</span>
+              <span>{t('booking.data')}</span>
+              <span>{t('booking.services')}</span>
+              <span>{t('booking.specialist')}</span>
+              <span>{t('booking.date')}</span>
+              <span>{t('booking.confirm')}</span>
             </div>
           </div>
 
@@ -320,7 +322,7 @@ const ClientBooking: React.FC = () => {
             {step === 1 && (
               <div>
                 <h2 className="text-2xl font-semibold mb-6 theme-transition" style={{ color: safeColors.text }}>
-                  Información del Cliente
+                  {t('booking.clientInfo')}
                 </h2>
 
                 <form onSubmit={handleClientSubmit} className="space-y-6">
@@ -331,7 +333,7 @@ const ClientBooking: React.FC = () => {
                     />
                     <input
                       type="text"
-                      placeholder="Nombre completo"
+                      placeholder={t('booking.fullName')}
                       className="w-full pl-12 pr-4 py-3 rounded-xl focus:ring-2 focus:border-transparent transition-all theme-transition"
                       style={{
                         border: `1px solid ${safeColors.border}`,
@@ -349,7 +351,7 @@ const ClientBooking: React.FC = () => {
                     value={clientData.phone || ""}
                     onChange={(value) => setClientData({ ...clientData, phone: value })}
                     onValidation={handlePhoneValidation}
-                    placeholder="Número de teléfono"
+                    placeholder={t('booking.phone')}
                     required
                     showFormatHint={true}
                   />
@@ -361,7 +363,7 @@ const ClientBooking: React.FC = () => {
                     />
                     <input
                       type="email"
-                      placeholder="Email"
+                      placeholder={t('booking.email')}
                       className="w-full pl-12 pr-4 py-3 rounded-xl focus:ring-2 focus:border-transparent transition-all theme-transition"
                       style={{
                         border: `1px solid ${safeColors.border}`,
@@ -383,7 +385,7 @@ const ClientBooking: React.FC = () => {
                       background: `linear-gradient(135deg, ${safeColors.primary}, ${safeColors.secondary})`,
                     }}
                   >
-                    Continuar
+                    {t('booking.continue')}
                   </button>
                 </form>
               </div>

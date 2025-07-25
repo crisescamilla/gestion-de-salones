@@ -37,6 +37,7 @@ import { getCurrentTenant } from "../utils/tenantManager";
 import { getAppointments as getAppointmentsSupabase, deleteAppointment as deleteAppointmentSupabase, updateAppointment } from '../utils/appointmentsSupabase';
 import { updateClientInSupabase } from '../utils/clientsSupabase';
 import { useTranslation } from 'react-i18next';
+import { FaWhatsapp } from 'react-icons/fa';
 
 
 const AppointmentManager: React.FC = () => {
@@ -658,7 +659,16 @@ const AppointmentManager: React.FC = () => {
                             style={{ color: colors?.textSecondary || "#6b7280" }}
                           >
                             <Phone className="w-3 h-3 mr-1" />
-                            {client.phone}
+                            <a
+                              href={`https://wa.me/${client.phone.replace(/[^\d]/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-600 font-semibold hover:underline flex items-center"
+                              title="Chatear por WhatsApp"
+                            >
+                              <FaWhatsapp className="w-4 h-4 mr-1" />
+                              {client.phone}
+                            </a>
                           </div>
                           <div
                             className="flex items-center text-sm theme-transition"
