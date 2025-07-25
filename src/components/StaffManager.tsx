@@ -17,7 +17,7 @@ import {
   Users,
   Wrench
 } from 'lucide-react';
-import { StaffMember, ServiceCategory } from '../types';
+import type { StaffMember, ServiceCategory, Appointment } from '../types';
 import { serviceCategories } from '../data/services';
 import { useTheme } from '../hooks/useTheme';
 import { useStaffData } from '../hooks/useStaffData';
@@ -26,6 +26,7 @@ import { handleStaffDeletion } from '../utils/staffIntegrity';
 import { getCurrentTenant } from '../utils/tenantManager';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from 'react-i18next';
+import { getAppointments as getAppointmentsSupabase } from '../utils/appointmentsSupabase';
 
 
 const StaffManager: React.FC = () => {
@@ -39,6 +40,7 @@ const StaffManager: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error' | 'warning'; text: string } | null>(null);
   const [showRepairTools, setShowRepairTools] = useState(false);
   const [repairLoading, setRepairLoading] = useState(false);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   
   const { t } = useTranslation();
 
@@ -51,6 +53,16 @@ const StaffManager: React.FC = () => {
       setStaffMembers(staff);
     }
   }, [staff, staffLoading]);
+
+  useEffect(() => {
+    async function fetchAppointments() {
+      if (currentTenant?.id) {
+        const data = await getAppointmentsSupabase(currentTenant.id);
+        setAppointments(data);
+      }
+    }
+    fetchAppointments();
+  }, [currentTenant]);
 
   useEffect(() => {
     if (message) {
@@ -173,6 +185,14 @@ const StaffManager: React.FC = () => {
       (filterActive === 'inactive' && !staff.isActive);
     
     return matchesSearch && matchesSpecialty && matchesActive;
+  });
+
+  // Calcular servicios realizados por cada staff
+  const staffWithServiceCount = filteredStaff.map(staff => {
+    const completedServices = appointments.filter(
+      apt => apt.staff_id === staff.id && apt.status === 'completed'
+    ).length;
+    return { ...staff, completedServices };
   });
 
   return (
@@ -428,7 +448,7 @@ const StaffManager: React.FC = () => {
             </p>
           </div>
         ) : (
-          filteredStaff.map(staff => (
+          staffWithServiceCount.map(staff => (
             <StaffCard 
               key={staff.id} 
               staff={staff}
